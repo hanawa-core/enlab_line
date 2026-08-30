@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>エンラボ LINE｜できること</title>
+<meta name="description" content="エンデュランスラボの新しい取り組み。LINEでできること、その使い方。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    color-scheme:dark;
+    --void:#04080F; --surface:#111D31; --surface-2:#17263E;
+    --line:#223B5C; --line-soft:#1A2E49;
+    --ink:#EAF2FB; --ink-2:#A9BDD4; --ink-3:#6E85A2;
+    --cyan:#0EA5E9; --cyan-hi:#38BDF8; --teal:#0E7490; --slate:#46586F;
+    --display:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",sans-serif;
+    --body:"Noto Sans JP","Hiragino Kaku Gothic ProN",sans-serif;
+    --mono:"IBM Plex Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.9;
+    -webkit-font-smoothing:antialiased;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background:
+      radial-gradient(760px 460px at 50% -14%, rgba(14,165,233,.17), transparent 62%),
+      linear-gradient(180deg,#070D18,var(--void)) fixed;
+  }
+  a{color:inherit}
+  .wrap{max-width:640px;margin:0 auto;padding:26px 18px 56px}
+
+  .eyebrow{display:flex;align-items:center;gap:11px;margin-bottom:22px;
+    font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-3)}
+  .eyebrow b{color:var(--cyan-hi);font-weight:500}
+  .eyebrow::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(56,189,248,.28),transparent)}
+
+  h1{font-family:var(--display);font-weight:900;font-size:27px;line-height:1.45;margin:0 0 14px;letter-spacing:.01em}
+  h1 span{color:var(--cyan-hi)}
+  .lede{margin:0 0 30px;color:var(--ink-2);font-size:14.5px;line-height:2}
+
+  h2{font-family:var(--display);font-weight:900;font-size:17px;margin:44px 0 4px;
+     display:flex;align-items:center;gap:10px}
+  h2::before{content:"";width:3px;height:17px;background:var(--cyan);border-radius:2px;flex:none}
+  .h2sub{margin:0 0 18px;padding-left:13px;color:var(--ink-3);font-size:12.5px;line-height:1.85}
+
+  /* なぜ作ったか */
+  .why{background:linear-gradient(180deg,var(--surface),#0D1728);
+       border:1px solid var(--line-soft);border-radius:10px;padding:22px 20px;margin:0 0 8px}
+  .why p{margin:0 0 13px;font-size:14px;line-height:2.05;color:var(--ink-2)}
+  .why p:last-child{margin-bottom:0}
+  .why strong{color:var(--ink);font-weight:700}
+  .why .quote{color:var(--cyan-hi);font-weight:700}
+
+  /* 機能カード */
+  .cards{display:grid;gap:12px}
+  .card{background:var(--surface);border:1px solid var(--line-soft);border-radius:10px;
+        padding:18px 18px 16px;position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--cyan);opacity:.55}
+  .card.grey::before{background:var(--slate)}
+  .card .hd{display:flex;align-items:center;gap:12px;margin-bottom:9px}
+  .card .em{font-size:24px;line-height:1;flex:none}
+  .card h3{font-family:var(--display);font-weight:900;font-size:16px;margin:0;line-height:1.4}
+  .card h3 small{display:block;font-family:var(--mono);font-weight:400;font-size:9.5px;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);margin-top:3px}
+  .card p{margin:0 0 11px;font-size:13.5px;line-height:1.95;color:var(--ink-2)}
+  .card ul{margin:0 0 12px;padding-left:1.1em;font-size:13px;color:var(--ink-3);line-height:1.95}
+  .card ul li::marker{color:var(--cyan)}
+  .card .go{display:inline-flex;align-items:center;gap:7px;text-decoration:none;
+    font-family:var(--display);font-weight:700;font-size:13px;color:var(--cyan-hi);
+    border:1px solid var(--line);border-radius:7px;padding:9px 14px;background:#0B2233}
+  .card.grey .go{color:var(--ink-2);background:#141E2E}
+  .card .go::after{content:"→";font-family:var(--mono)}
+  .card .note{margin:10px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.8}
+
+  /* 使い分け */
+  .split{display:grid;gap:10px}
+  .sp{background:var(--surface);border:1px solid var(--line-soft);border-radius:10px;padding:17px 17px 15px}
+  .sp .k{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+  .sp .k .em{font-size:20px;line-height:1}
+  .sp .k b{font-family:var(--display);font-weight:900;font-size:16px}
+  .sp .k i{font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--cyan-hi)}
+  .sp p{margin:0;font-size:13.5px;line-height:1.95;color:var(--ink-2)}
+  .sp .go{display:inline-flex;align-items:center;gap:7px;text-decoration:none;margin-top:13px;
+    font-family:var(--display);font-weight:700;font-size:13px;color:var(--cyan-hi);
+    border:1px solid var(--line);border-radius:7px;padding:9px 14px;background:#0B2233}
+  .sp .go::after{content:"→";font-family:var(--mono)}
+  .splitsum{margin:14px 0 0;text-align:center;font-size:13px;color:var(--ink-3);line-height:2}
+  .splitsum b{color:var(--cyan-hi);font-family:var(--display);font-weight:700}
+
+  /* 流れ */
+  .flow{counter-reset:s;display:grid;gap:2px;margin:0}
+  .flow li{list-style:none;counter-increment:s;position:relative;
+    padding:14px 16px 14px 52px;background:var(--surface);border:1px solid var(--line-soft)}
+  .flow li:first-child{border-radius:10px 10px 0 0}
+  .flow li:last-child{border-radius:0 0 10px 10px}
+  .flow li::before{content:counter(s);position:absolute;left:16px;top:14px;
+    width:22px;height:22px;border-radius:50%;background:#0B2233;border:1px solid var(--cyan);
+    color:var(--cyan-hi);font-family:var(--mono);font-size:11px;display:grid;place-items:center}
+  .flow b{display:block;font-family:var(--display);font-weight:700;font-size:14.5px;margin-bottom:2px}
+  .flow small{display:block;font-size:12.5px;color:var(--ink-3);line-height:1.85}
+
+  /* QA */
+  .qa{border-top:1px solid var(--line-soft)}
+  .qa details{border-bottom:1px solid var(--line-soft)}
+  .qa summary{cursor:pointer;list-style:none;padding:15px 30px 15px 0;position:relative;
+    font-family:var(--display);font-weight:700;font-size:14px;color:var(--ink)}
+  .qa summary::-webkit-details-marker{display:none}
+  .qa summary::after{content:"+";position:absolute;right:6px;top:14px;color:var(--cyan-hi);
+    font-family:var(--mono);font-size:16px}
+  .qa details[open] summary::after{content:"−"}
+  .qa .a{padding:0 0 17px;font-size:13.5px;color:var(--ink-2);line-height:2}
+  .qa .a p{margin:0 0 9px} .qa .a p:last-child{margin:0}
+
+  /* 会員サイト導線 */
+  .member{margin-top:44px;background:linear-gradient(160deg,#0D2437,#0B1526);
+    border:1px solid var(--line);border-radius:12px;padding:24px 20px}
+  .member h2{margin:0 0 4px}
+  .member .h2sub{margin-bottom:16px}
+  .mlinks{display:grid;gap:9px}
+  .mlink{display:flex;align-items:center;gap:13px;text-decoration:none;
+    background:#0B1220;border:1px solid var(--line-soft);border-radius:8px;padding:14px 15px;color:var(--ink)}
+  .mlink .em{font-size:19px;flex:none}
+  .mlink b{font-family:var(--display);font-weight:700;font-size:14px;display:block}
+  .mlink small{display:block;font-size:11.5px;color:var(--ink-3);line-height:1.7}
+  .mlink i{margin-left:auto;font-style:normal;color:var(--cyan-hi);font-family:var(--mono);font-size:13px}
+
+  .close{margin-top:46px;padding-top:26px;border-top:1px solid var(--line-soft);text-align:center}
+  .close .t{font-family:var(--display);font-weight:900;font-size:17px;color:var(--ink);margin:0 0 8px}
+  .close .s{margin:0;font-size:12.5px;color:var(--ink-3);line-height:1.9}
+  .close .mark{margin-top:20px;font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--ink-3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow"><b>Endurance Lab</b><span>NEW</span></div>
+
+  <h1>エンラボが、<br><span>毎日ふれる場所</span>になりました。</h1>
+  <p class="lede">
+    LINEでエンラボが使えるようになりました。<br>
+    記録する。測る。計算する。相談する。<br>
+    ぜんぶ、LINEを開くだけで完結します。
+  </p>
+
+  <h2>なぜ作ったのか</h2>
+  <p class="h2sub">まず、ここだけ読んでください。</p>
+  <div class="why">
+    <p>これまでエンラボを離れていった方に理由を聞くと、返ってくる言葉はいつも同じでした。<br>
+      <span class="quote">「時間がなくて」「気持ちが続かなくて」</span></p>
+    <p><strong>「内容が合わなかった」と言われたことは、一度もありません。</strong><br>
+      足りなかったのは中身ではなく、<strong>毎日ふれる場所</strong>でした。</p>
+    <p>会員サイトは、開こうと決めないと開けません。<br>
+      でもLINEは、もう毎日開いています。<br>
+      だから、そこに置くことにしました。</p>
+    <p>これは<strong>監視するための仕組みではありません</strong>。<br>
+      走った日も、整えた日も、休んだ日も、同じ1タップです。<br>
+      休んだ日を押せることのほうが、ずっと大事だと思っています。</p>
+  </div>
+
+  <h2>LINEでできること</h2>
+  <p class="h2sub">画面下のメニューから、6つ。上の3つがエンラボ専用の新機能です。</p>
+
+  <div class="cards">
+
+    <div class="card">
+      <div class="hd"><div class="em">🏃</div>
+        <h3>エンラボルーティン<small>1 tap a day</small></h3></div>
+      <p>今日を1タップで残します。<b>走った／整えた・鍛えた／休んだ</b>の3つだけ。迷う余地をなくしてあります。</p>
+      <ul>
+        <li>連続日数と通算日数が自動でたまる</li>
+        <li>今月の内訳（走／整・鍛／休）が見える</li>
+        <li>記録数のランキング（<b>名前は伏せて表示</b>）</li>
+        <li><b>「休んだ」もちゃんと1記録</b>としてカウントされます</li>
+      </ul>
+      <a class="go" href="https://liff.line.me/2011330570-2bgyt8cs">開く</a>
+      <p class="note">1日1回でじゅうぶんです。同じ日に押し直しても上書きされるだけで、増えません。</p>
+    </div>
+
+    <div class="card">
+      <div class="hd"><div class="em">📋</div>
+        <h3>エンラボフィジカルテスト<small>Physical Test</small></h3></div>
+      <p>自分のからだの<b>現在地</b>を、11項目・0〜3点で測ります。やり方の動画がその場で再生されるので、LINEを離れずに最後まで進められます。</p>
+      <ul>
+        <li>柔軟性5項目（腸腰筋・下腿三頭筋・ハムストリング・内転筋・臀部）</li>
+        <li>動きの質3項目（オーバーヘッドスクワット・プッシュアップ・ロータリー）</li>
+        <li>前回との差を、色と矢印で比較</li>
+        <li>ブロック別スコアと、総括コメント</li>
+        <li>結果カードをSNS・LINEにそのままシェア</li>
+      </ul>
+      <a class="go" href="https://liff.line.me/2011330570-1tyqyzfb">測る</a>
+      <p class="note">目安は<b>2〜3ヶ月に1回</b>。毎月やっても差は出ません。動画は限定公開なので、リンクを知っている人しか見られません。<br>
+        ※ <b>0点は「痛みが出る」</b>の意味です。低い点ではなく、合計から除外されます。痛みが出た項目は無理をせず、Discordで教えてください。</p>
+    </div>
+
+    <div class="card">
+      <div class="hd"><div class="em">🍯</div>
+        <h3>補給計算<small>Fuel Calculator</small></h3></div>
+      <p>距離・獲得標高・目標タイム・体重から、レース当日の<b>糖質・水分・ナトリウム</b>を区間ごとに割り出します。</p>
+      <ul>
+        <li>エイドごとの補給計画表が出る</li>
+        <li><b>「エンラボに保存」で計画を残せる</b></li>
+        <li>次回は「保存した計画から選ぶ」でそのまま呼び出し</li>
+        <li>体重・装備重量・発汗タイプ・ジェルの成分は<b>次回から自動で入ります</b></li>
+        <li>レース中に見られるカード画像として書き出し</li>
+      </ul>
+      <a class="go" href="https://liff.line.me/2011330570-YwCvzuQi">計算する</a>
+      <p class="note">レースが終わったら、実際どうだったかをDiscordに書いておくと、次の計画の精度が上がります。</p>
+    </div>
+
+    <div class="card grey">
+      <div class="hd"><div class="em">🤖</div>
+        <h3>AIコーチ<small>Ask anytime</small></h3></div>
+      <p>練習メニュー、ペース設定、レース前の不安。夜中でも聞ける相談相手です。エンラボの考え方を読み込ませてあります。</p>
+      <p class="note">判断に迷うこと・からだの痛みは、AIではなく<b>Discordで直接</b>聞いてください。</p>
+    </div>
+
+    <div class="card grey">
+      <div class="hd"><div class="em">📚</div>
+        <h3>会員ページ<small>Member Site</small></h3></div>
+      <p>動画と記事の本体は、これまでどおり会員サイトにあります。LINEは入口で、中身はこちらです。</p>
+      <a class="go" data-link="top" href="#">会員ページへ</a>
+    </div>
+
+    <div class="card grey">
+      <div class="hd"><div class="em">💬</div>
+        <h3>Discord<small>Community</small></h3></div>
+      <p>質問・報告・雑談の場所。ここだけは、人と話す場所として残しています。</p>
+      <a class="go" href="https://discord.gg/4qyRmAeB5J">参加する</a>
+    </div>
+
+  </div>
+
+  <h2>3つの使い分け</h2>
+  <p class="h2sub">LINE・メンバーサイト・Discord。役割を分けてあります。</p>
+  <div class="split">
+    <div class="sp">
+      <div class="k"><span class="em">📱</span><b>LINE</b><i>毎日ふれるところ</i></div>
+      <p>1タップの記録、フィジカルテスト、補給計算。<br>
+        <b>1分以内で終わること</b>は、ぜんぶここ。<br>
+        決めなくても、とりあえず開く場所です。</p>
+    </div>
+    <div class="sp">
+      <div class="k"><span class="em">📚</span><b>メンバーサイト</b><i>学ぶところ</i></div>
+      <p>ケア動画・トレーニング動画・解説記事の本体はこちら。<br>
+        <b>腰をすえてじっくり見る</b>のは、ここです。</p>
+      <a class="go" data-link="top" href="#">会員ページへ</a>
+    </div>
+    <div class="sp">
+      <div class="k"><span class="em">💬</span><b>Discord</b><i>話すところ</i></div>
+      <p>質問・レース報告・雑談。<br>
+        「ここが痛い」「うまくいかない」も気軽にどうぞ。<br>
+        <b>人と話したいとき</b>は、いつでもここへ。</p>
+      <a class="go" href="https://discord.gg/4qyRmAeB5J">参加する</a>
+    </div>
+  </div>
+  <p class="splitsum">記録は <b>LINE</b>　／　学びは <b>サイト</b>　／　相談は <b>Discord</b></p>
+
+  <h2>まず、この順番で</h2>
+  <p class="h2sub">初日にやることは3つだけです。</p>
+  <ol class="flow">
+    <li><b>「エンラボルーティン」を1回押す</b>
+      <small>今日が走った日でも、休んだ日でも。ここが起点になります。</small></li>
+    <li><b>「エンラボフィジカルテスト」を通しで1回</b>
+      <small>15〜20分ほど。これが<b>あなたの基準値</b>になります。取らないと、次回の比較ができません。</small></li>
+    <li><b>次のレースを「補給計算」して保存</b>
+      <small>先の予定でも構いません。保存しておけば、直前にそのまま開けます。</small></li>
+  </ol>
+
+  <h2>よくある質問</h2>
+  <p class="h2sub">気になりそうなところを先に。</p>
+  <div class="qa">
+    <details>
+      <summary>毎日通知が来るんですか？</summary>
+      <div class="a"><p>来ません。こちらから一斉配信を送る設計にしていません。<br>
+        あなたが開きたいときに、下のメニューから開いてください。<br>
+        どうしても伝えるべきことがあるときだけ、Discordに書きます。</p></div>
+    </details>
+    <details>
+      <summary>記録をサボったら怒られますか？</summary>
+      <div class="a"><p>怒りません。そもそも、そういう仕組みにしていません。</p>
+        <p>「休んだ」を押した日も、記録は1つ増えます。ランキングにも入ります。<br>
+        <b>休養は記録です。空白ではありません。</b></p></div>
+    </details>
+    <details>
+      <summary>ランキングに実名が出ますか？</summary>
+      <div class="a"><p>出ません。順位と記録数だけが表示され、名前は伏せてあります。<br>
+        自分の行だけ「あなた」と表示されます。</p></div>
+    </details>
+    <details>
+      <summary>フィジカルテストは何回やればいいですか？</summary>
+      <div class="a"><p><b>2〜3ヶ月に1回</b>を目安にしてください。<br>
+        柔軟性も動きの質も、数週間では有意な差が出ません。短い間隔で測ると、その日の体調の揺れを「変化」と読み違えます。</p></div>
+    </details>
+    <details>
+      <summary>痛みが出る動きがありました。</summary>
+      <div class="a"><p>その項目は<b>0点</b>を選んでください。0点は「一番低い点」ではなく「痛みが出る」という意味で、合計点からも比較からも除外されます。</p>
+        <p>そのうえで、どこがどう痛むかをDiscordに書いてください。テストを無理に完走する必要はありません。</p></div>
+    </details>
+    <details>
+      <summary>データは何に使われますか？</summary>
+      <div class="a"><p>あなたの継続と、次にどんなコンテンツを作るかの判断に使います。<br>
+        外部に渡すことはありません。記録しているのはLINEの表示名と、あなたが入力した記録・測定値・補給計算の内容だけです。</p></div>
+    </details>
+  </div>
+
+  <div class="member">
+    <h2>動画と記事は、会員サイトに</h2>
+    <p class="h2sub">LINEは入口です。学ぶ場所はこれまでどおりこちら。</p>
+    <div class="mlinks">
+      <a class="mlink" data-link="top" href="#"><span class="em">🏠</span>
+        <span><b>会員ページ トップ</b><small>すべてのコンテンツの入口</small></span><i>→</i></a>
+      <a class="mlink" data-link="care" href="#"><span class="em">🧘</span>
+        <span><b>ケア動画</b><small>柔軟性が低かった項目から</small></span><i>→</i></a>
+      <a class="mlink" data-link="train" href="#"><span class="em">🏋️</span>
+        <span><b>トレーニング動画</b><small>動きの質を上げる</small></span><i>→</i></a>
+      <a class="mlink" data-link="read" href="#"><span class="em">📖</span>
+        <span><b>解説記事</b><small>なぜそうするのか</small></span><i>→</i></a>
+      <a class="mlink" href="https://discord.gg/4qyRmAeB5J"><span class="em">💬</span>
+        <span><b>Discord</b><small>質問・報告・雑談</small></span><i>→</i></a>
+    </div>
+  </div>
+
+  <div class="close">
+    <p class="t">今日の取り組みが明日を創る。</p>
+    <p class="s">大きく変えなくていいので、1タップだけ、今日から。</p>
+    <p class="mark">Endurance Lab</p>
+  </div>
+
+</div>
+
+<script>
+/* 会員サイトのリンクは1か所で管理します。
+   アンカーが決まったら care / train / read を埋めてください。空なら top に飛びます。 */
+var MEMBER = {
+  top:   'https://coredesign-tr.com/sp/gbK5lXHr/DczvjqO9/member/',
+  care:  '',
+  train: '',
+  read:  ''
+};
+document.querySelectorAll('[data-link]').forEach(function(a){
+  a.href = MEMBER[a.dataset.link] || MEMBER.top;
+});
+</script>
+</body>
+</html>

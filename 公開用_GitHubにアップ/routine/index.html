@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>エンラボルーティン</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    color-scheme:dark;
+    --void:#04080F; --navy:#0F172A; --surface:#111D31; --surface-2:#17263E;
+    --line:#223B5C; --line-soft:#1A2E49;
+    --ink:#EAF2FB; --ink-2:#A9BDD4; --ink-3:#6E85A2;
+    --cyan:#0EA5E9; --cyan-hi:#38BDF8; --teal:#0E7490; --slate:#46586F;
+    --display:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",sans-serif;
+    --body:"Noto Sans JP","Hiragino Kaku Gothic ProN",sans-serif;
+    --mono:"IBM Plex Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.8;
+    -webkit-font-smoothing:antialiased;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background:
+      radial-gradient(700px 420px at 50% -12%, rgba(14,165,233,.16), transparent 62%),
+      linear-gradient(180deg,#070D18,var(--void));
+  }
+  button{font-family:inherit;cursor:pointer}
+  :focus-visible{outline:2px solid var(--cyan-hi);outline-offset:2px}
+  .app{max-width:520px;margin:0 auto;padding:22px 18px 32px}
+
+  .top{display:flex;align-items:center;gap:11px;margin-bottom:20px;
+    font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-3)}
+  .top b{color:var(--cyan-hi);font-weight:500}
+  .top::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(56,189,248,.25),transparent)}
+
+  h1{font-family:var(--display);font-weight:900;font-size:22px;margin:0 0 6px;line-height:1.4}
+  .lede{margin:0 0 18px;color:var(--ink-3);font-size:13px;line-height:1.8}
+
+  /* ---- buttons ---- */
+  .opts{display:grid;gap:10px}
+  .opt{
+    display:grid;grid-template-columns:46px 1fr auto;gap:14px;align-items:center;
+    width:100%;text-align:left;padding:16px 16px;border-radius:8px;
+    background:var(--surface);border:1px solid var(--line-soft);color:var(--ink);
+    font-size:16px;transition:background .14s,border-color .14s,transform .08s;
+  }
+  .opt:active{transform:scale(.985)}
+  .opt .em{font-size:24px;text-align:center;line-height:1}
+  .opt .tx{font-family:var(--display);font-weight:700}
+  .opt .tx small{display:block;font-family:var(--body);font-weight:400;
+    font-size:11.5px;color:var(--ink-3);line-height:1.6;margin-top:1px}
+  .opt .mk{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+  .opt[data-t="run"]:hover,.opt[data-t="run"].on{border-color:var(--cyan);background:#0B2E44}
+  .opt[data-t="care"]:hover,.opt[data-t="care"].on{border-color:var(--teal);background:#0A2632}
+  .opt[data-t="rest"]:hover,.opt[data-t="rest"].on{border-color:var(--slate);background:#1A2434}
+  .opt.on .mk{color:var(--cyan-hi)}
+  .opt:disabled{opacity:.5}
+
+  /* ---- result ---- */
+  .res{
+    position:relative;background:linear-gradient(160deg,var(--surface),var(--navy));
+    border:1px solid var(--line);border-radius:9px;padding:20px 20px 18px;margin-bottom:16px;
+  }
+  .res::before,.res::after{content:"";position:absolute;width:13px;height:13px;
+    border:1px solid var(--cyan);opacity:.5}
+  .res::before{top:9px;left:9px;border-right:none;border-bottom:none}
+  .res::after{bottom:9px;right:9px;border-left:none;border-top:none}
+  .saved{font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;color:var(--cyan-hi);text-transform:uppercase}
+  .streak{display:flex;align-items:baseline;gap:9px;margin-top:6px;
+    font-family:var(--display);font-weight:900;font-variant-numeric:tabular-nums}
+  .streak b{font-size:46px;line-height:1;color:var(--cyan-hi);text-shadow:0 0 34px rgba(56,189,248,.45)}
+  .streak span{font-size:15px;color:var(--ink-2);font-weight:700}
+  .total{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-top:7px;letter-spacing:.04em}
+
+  .mon{display:flex;margin-top:16px;border-top:1px solid var(--line-soft);padding-top:14px}
+  .mon > div{flex:1;font-variant-numeric:tabular-nums}
+  .mon > div + div{border-left:1px solid var(--line-soft);padding-left:14px}
+  .mon small{display:block;font-size:11px;color:var(--ink-3);margin-bottom:2px}
+  .mon b{font-family:var(--display);font-weight:900;font-size:19px}
+  .mon .r b{color:var(--cyan-hi)} .mon .c b{color:var(--teal)} .mon .s b{color:var(--ink-2)}
+
+  /* ---- 今月のランキング ---- */
+  .rank{margin-top:22px;border-top:1px solid var(--line-soft);padding-top:18px}
+  .rank h2{
+    font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--cyan-hi);margin:0 0 4px;font-weight:500;display:flex;align-items:center;gap:10px;
+  }
+  .rank h2::after{content:"";flex:1;height:1px;background:rgba(56,189,248,.22)}
+  .rank .sum{font-size:12.5px;color:var(--ink-3);line-height:1.8;margin:0 0 13px}
+  .rank .sum b{color:var(--ink-2);font-family:var(--display);font-weight:700}
+  .rlist{display:grid;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);
+    border-radius:7px;overflow:hidden}
+  .rrow{
+    background:var(--surface);padding:13px 14px;display:grid;
+    grid-template-columns:30px 1fr auto;gap:13px;align-items:center;font-size:14px;
+  }
+  .rrow .bar{
+    height:8px;border-radius:2px;background:var(--void);
+    border:1px solid var(--line-soft);overflow:hidden;position:relative;
+  }
+  .rrow .bar i{display:block;height:100%;background:var(--slate)}
+  .rrow.podium .bar i{background:var(--teal)}
+  .rrow.me .bar i{background:linear-gradient(90deg,var(--cyan),var(--cyan-hi));
+    box-shadow:0 0 12px rgba(56,189,248,.55)}
+  .rrow .dy em{
+    font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+    color:var(--cyan-hi);margin-right:8px;
+  }
+  .rrow .no{
+    font-family:var(--display);font-weight:900;font-size:15px;color:var(--ink-3);
+    text-align:center;font-variant-numeric:tabular-nums;
+  }
+  .rrow .dy{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+  .rrow .dy b{font-family:var(--display);font-weight:900;font-size:16px;color:var(--ink)}
+  .rrow.podium .no{color:var(--cyan-hi)}
+  .rrow.me{background:var(--surface-2);box-shadow:inset 2px 0 0 var(--cyan)}
+  .rrow.me .dy b{color:var(--cyan-hi)}
+  .rank .mine{
+    margin-top:10px;background:var(--surface);border:1px dashed var(--line);
+    border-radius:7px;padding:12px 14px;font-size:13px;color:var(--ink-2);line-height:1.8;
+  }
+  .rank .mine b{font-family:var(--display);font-weight:900;color:var(--cyan-hi);font-size:17px}
+  .rank .note{font-size:11px;color:var(--ink-3);line-height:1.8;margin:12px 0 0}
+
+  .again{font-size:12.5px;color:var(--ink-3);margin:0 0 12px;line-height:1.8}
+  .foot{margin-top:22px;font-family:var(--mono);font-size:10px;color:var(--ink-3);
+    letter-spacing:.1em;text-align:center;line-height:2}
+
+  .msg{background:var(--surface);border:1px solid var(--line);border-radius:8px;
+    padding:16px;font-size:13.5px;color:var(--ink-2);line-height:1.85}
+  .msg b{font-family:var(--display);display:block;margin-bottom:4px;color:var(--ink)}
+  .spin{display:flex;align-items:center;gap:11px;color:var(--ink-3);font-family:var(--mono);font-size:11px;
+    letter-spacing:.1em;padding:30px 0}
+  .spin i{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--cyan-hi);
+    border-radius:50%;animation:sp .7s linear infinite;display:block}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media(prefers-reduced-motion:reduce){.spin i{animation:none}}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <p class="top"><b>Endurance Lab</b> ルーティン</p>
+
+  <div id="loading" class="spin"><i></i>読み込んでいます</div>
+
+  <!-- 未記録 -->
+  <div id="ask" hidden>
+    <h1>今日、体と向き合いましたか</h1>
+    <p class="lede">どれを押しても、継続はつながります。走れない日も、休んだ日も。</p>
+    <div class="opts">
+      <button class="opt" data-t="run"><span class="em">🏃</span><span class="tx">走った</span><span class="mk">›</span></button>
+      <button class="opt" data-t="care"><span class="em">🧘</span><span class="tx">整えた／鍛えた<small>5分でもOK</small></span><span class="mk">›</span></button>
+      <button class="opt" data-t="rest"><span class="em">😴</span><span class="tx">休んだ<small>これも大事な一日</small></span><span class="mk">›</span></button>
+    </div>
+  </div>
+
+  <!-- 記録済み -->
+  <div id="done" hidden>
+    <div class="res">
+      <span class="saved" id="savedLab">記録しました</span>
+      <div class="streak"><b id="vStreak">0</b><span>日 連続</span></div>
+      <div class="total" id="vTotal"></div>
+      <div class="mon">
+        <div class="r"><small>走った</small><b id="mRun">0</b></div>
+        <div class="c"><small>整えた／鍛えた</small><b id="mCare">0</b></div>
+        <div class="s"><small>休んだ</small><b id="mRest">0</b></div>
+      </div>
+    </div>
+    <p class="again" id="againTx"></p>
+    <div class="opts" id="againOpts">
+      <button class="opt" data-t="run"><span class="em">🏃</span><span class="tx">走った</span><span class="mk">›</span></button>
+      <button class="opt" data-t="care"><span class="em">🧘</span><span class="tx">整えた／鍛えた</span><span class="mk">›</span></button>
+      <button class="opt" data-t="rest"><span class="em">😴</span><span class="tx">休んだ</span><span class="mk">›</span></button>
+    </div>
+    <div class="rank" id="rank" hidden>
+      <h2 id="rankTitle">今月の記録</h2>
+      <p class="sum" id="rankSum"></p>
+      <div class="rlist" id="rankList"></div>
+      <div class="mine" id="rankMine"></div>
+      <p class="note">走った・整えた／鍛えた・休んだ、どれも1日として数えます。<br>続けた日数の順です。量ではありません。名前は出ません。</p>
+    </div>
+
+    <p class="foot">今日の取り組みが明日を創る。</p>
+  </div>
+
+  <div id="err" hidden><div class="msg"><b>読み込めませんでした</b>電波の良いところで、もう一度メニューから開いてみてください。</div></div>
+</div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="../config.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const LABEL = { run:'走った', care:'整えた／鍛えた', rest:'休んだ' };
+let idToken = null, state = null;
+
+async function api(action, extra = {}){
+  const r = await fetch(ENLAB.API, {
+    method:'POST',
+    headers:{
+      'content-type':'application/json',
+      'apikey': ENLAB.ANON,
+      'authorization': 'Bearer ' + ENLAB.ANON,
+    },
+    body: JSON.stringify({ action, idToken, ...extra }),
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+function esc(t){ return String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+async function loadRank(){
+  let r;
+  try { r = await api('record.rank'); } catch(e){ return; }
+  if (!r || !r.people) return;
+
+  $('rankTitle').textContent = r.month + ' の記録';
+  $('rankSum').innerHTML =
+    '今月は <b>' + r.people + '人</b> が記録しています（在籍 ' + r.members + '人）。<br>' +
+    'みんなで積み上げた日数は <b>' + r.totalDays + '日</b>。';
+
+  const maxDays = Math.max(1, ...r.top.map(t => t.days));
+  $('rankList').innerHTML = r.top.map(t =>
+    '<div class="rrow' + (t.rank <= 3 ? ' podium' : '') + (t.me ? ' me' : '') + '">' +
+      '<span class="no">' + t.rank + '</span>' +
+      '<span class="bar"><i style="width:' + Math.round(t.days / maxDays * 100) + '%"></i></span>' +
+      '<span class="dy">' + (t.me ? '<em>あなた</em>' : '') + '<b>' + t.days + '</b> 日</span>' +
+    '</div>').join('');
+
+  const inTop = r.top.some(t => t.me);
+  $('rankMine').innerHTML = r.me && r.me.rank
+    ? (inTop
+        ? 'あなたは今月 <b>' + r.me.days + '</b> 日。この調子で。'
+        : 'あなたは今月 <b>' + r.me.days + '</b> 日、<b>' + r.me.rank + '</b> 位です。')
+    : '今月はまだ記録がありません。今日から1日目です。';
+  $('rankMine').hidden = false;
+  $('rank').hidden = false;
+}
+
+function render(){
+  $('loading').hidden = true;
+  if (!state.today){
+    $('ask').hidden = false; $('done').hidden = true;
+    return;
+  }
+  $('ask').hidden = true; $('done').hidden = false;
+  $('vStreak').textContent = state.streak;
+  $('vTotal').textContent  = '通算 ' + state.total + ' 日';
+  $('mRun').textContent  = state.month.run;
+  $('mCare').textContent = state.month.care;
+  $('mRest').textContent = state.month.rest;
+  $('savedLab').textContent = '記録しました ／ ' + LABEL[state.today];
+  $('againTx').textContent  = '今日は「' + LABEL[state.today] + '」で記録済みです。変えるなら、下から選び直せます。';
+  document.querySelectorAll('#againOpts .opt').forEach(b => {
+    b.classList.toggle('on', b.dataset.t === state.today);
+  });
+}
+
+async function put(type, btns){
+  btns.forEach(b => b.disabled = true);
+  try {
+    state = await api('record.put', { type });
+    render();
+    loadRank();
+    window.scrollTo({ top:0, behavior:'smooth' });
+  } catch(e){
+    $('err').hidden = false;
+  } finally {
+    btns.forEach(b => b.disabled = false);
+  }
+}
+
+document.querySelectorAll('.opt').forEach(b => {
+  b.onclick = () => put(b.dataset.t, [...document.querySelectorAll('.opt')]);
+});
+
+(async () => {
+  try {
+    await liff.init({ liffId: ENLAB.LIFF_ID_ROUTINE });
+    if (!liff.isLoggedIn()){ liff.login(); return; }
+    idToken = liff.getIDToken();
+    state = await api('record.get');
+    render();
+    loadRank();
+  } catch(e){
+    console.error(e);
+    $('loading').hidden = true;
+    $('err').hidden = false;
+  }
+})();
+</script>
+</body>
+</html>

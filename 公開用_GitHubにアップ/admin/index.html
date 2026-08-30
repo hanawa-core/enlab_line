@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>エンラボ 会員ダッシュボード</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+
+  :root{
+    color-scheme:light;
+    --void:#E7ECF3;          /* 空のトラック・記録なしのセル */
+    --page:#F4F6FA;
+    --navy:#FFFFFF;
+    --surface:#FFFFFF;
+    --surface-2:#F1F4F9;
+    --raise:#DCE3EE;
+    --line:#D3DCE8;
+    --line-soft:#E3E9F1;
+    --hair:rgba(2,132,199,.28);
+    --ink:#0F172A;
+    --ink-2:#46566B;
+    --ink-3:#75849A;
+    --cyan:#0284C7;
+    --cyan-hi:#0EA5E9;
+    --teal:#0F766E;
+    --slate:#7A8AA0;
+    --orange:#EA580C;
+    --amber:#B45309;
+    --rose:#BE123C;
+    --display:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    --body:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    --mono:"IBM Plex Mono","SFMono-Regular",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(1100px 620px at 18% -12%, rgba(2,132,199,.07), transparent 62%),
+      var(--page);
+    background-attachment:fixed;
+  }
+  button{font-family:inherit;cursor:pointer}
+  :focus-visible{outline:2px solid var(--cyan-hi);outline-offset:2px}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px 90px}
+
+  /* ---------- header ---------- */
+  header{border-bottom:1px solid var(--line);background:var(--surface)}
+  .hin{max-width:1180px;margin:0 auto;padding:26px 24px 22px}
+  .brandline{
+    display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:10px;
+    letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);margin:0 0 14px;
+  }
+  .brandline b{color:var(--cyan-hi);font-weight:500}
+  .brandline::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--hair),transparent)}
+  h1{font-family:var(--display);font-weight:900;font-size:clamp(24px,3.4vw,32px);margin:0 0 8px;letter-spacing:.01em}
+  .sub{margin:0;color:var(--ink-3);font-size:13.5px}
+  .sample{
+    display:none;align-items:center;gap:8px;margin-top:14px;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;
+    color:var(--amber);background:rgba(242,110,32,.09);
+    border:1px solid rgba(242,110,32,.36);border-radius:2px;padding:5px 11px;
+  }
+
+  /* ---------- kpi ---------- */
+  .kpis{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px;margin:26px 0 30px;
+  }
+  .kpi{
+    position:relative;background:var(--surface);border:1px solid var(--line);
+    border-radius:6px;padding:16px 18px 15px;
+    box-shadow:0 1px 2px rgba(15,23,42,.05);
+  }
+  .kpi::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:2px;background:var(--line)}
+  .kpi.good::before{background:var(--cyan)}
+  .kpi.warn::before{background:var(--amber)}
+  .kpi.bad::before{background:var(--rose)}
+  .kpi small{
+    display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink-3);margin-bottom:5px;
+  }
+  .kpi b{
+    font-family:var(--display);font-weight:900;font-size:32px;line-height:1.1;
+    font-variant-numeric:tabular-nums;display:block;
+  }
+  .kpi.good b{color:var(--cyan-hi)}
+  .kpi.warn b{color:var(--amber)}
+  .kpi.bad b{color:var(--rose)}
+  .kpi span.u{font-size:13px;color:var(--ink-3);font-weight:700;margin-left:4px}
+  .kpi em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.6}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-bottom:26px;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{
+    border:none;background:none;padding:11px 16px 9px;font-size:13.5px;color:var(--ink-3);
+    border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--display);font-weight:500;
+  }
+  .tab:hover{color:var(--ink-2)}
+  .tab[aria-selected="true"]{
+    color:var(--cyan);border-bottom-color:var(--cyan);font-weight:700;
+  }
+  .pane[hidden]{display:none}
+
+  h2.sec{
+    font-family:var(--display);font-weight:700;font-size:17px;margin:0 0 4px;
+    display:flex;align-items:center;gap:10px;
+  }
+  h2.sec .cnt{
+    font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:2px 8px;border-radius:2px;
+    background:var(--surface-2);color:var(--ink-3);border:1px solid var(--line-soft);
+  }
+  .lede{color:var(--ink-3);font-size:12.5px;margin:0 0 16px;line-height:1.8;max-width:70ch}
+  section{margin-bottom:40px}
+
+  /* ---------- follow cards ---------- */
+  .follow{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:12px}
+  .fc{
+    background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:15px 16px;
+    box-shadow:0 1px 2px rgba(15,23,42,.05);
+  }
+  .fc.risk{border-color:rgba(190,18,60,.32);background:linear-gradient(160deg,rgba(190,18,60,.06),var(--surface))}
+  .fc.watch{border-color:rgba(180,83,9,.30);background:linear-gradient(160deg,rgba(180,83,9,.05),var(--surface))}
+  .fc .r1{display:flex;align-items:baseline;gap:9px;margin-bottom:9px}
+  .fc .nm{font-family:var(--display);font-weight:700;font-size:15px}
+  .fc .st{
+    margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+    padding:2px 7px;border-radius:2px;border:1px solid;
+  }
+  .fc.risk .st{color:var(--rose);border-color:rgba(190,18,60,.4);background:rgba(190,18,60,.08)}
+  .fc.watch .st{color:var(--amber);border-color:rgba(180,83,9,.38);background:rgba(180,83,9,.07)}
+  .fc .big{
+    font-family:var(--display);font-weight:900;font-size:26px;font-variant-numeric:tabular-nums;
+    line-height:1.15;
+  }
+  .fc.risk .big{color:var(--rose)}
+  .fc.watch .big{color:var(--amber)}
+  .fc .big span{font-size:12px;color:var(--ink-3);font-weight:700;margin-left:5px}
+  .fc .meta{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-top:7px;letter-spacing:.03em;line-height:1.8}
+
+  /* ---------- table ---------- */
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface);box-shadow:0 1px 2px rgba(15,23,42,.05)}
+  table{border-collapse:collapse;width:100%;min-width:880px;font-size:13px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line-soft);vertical-align:middle;white-space:nowrap}
+  thead th{
+    background:var(--surface-2);font-family:var(--mono);font-weight:500;font-size:9.5px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+    border-bottom:1px solid var(--line);position:sticky;top:0;
+  }
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--surface-2)}
+  td.nm{font-weight:500}
+  td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+  .dot{
+    display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:8px;vertical-align:1px;
+  }
+  .dot.active{background:var(--cyan-hi)}
+  .dot.watch{background:var(--amber)}
+  .dot.risk{background:var(--rose)}
+  .dot.never{background:var(--slate)}
+  .streak{font-family:var(--display);font-weight:900;font-size:15px;font-variant-numeric:tabular-nums}
+  .streak.on{color:var(--cyan-hi)}
+  .streak.off{color:var(--ink-3)}
+
+  /* ---------- heatmap ---------- */
+  .hm{display:flex;gap:2px}
+  .hm i{width:7px;height:16px;border-radius:1px;background:var(--void);border:1px solid #DCE4EE;display:block}
+  .hm i.run{background:var(--cyan-hi);border-color:var(--cyan-hi)}
+  .hm i.care{background:var(--teal);border-color:var(--teal)}
+  .hm i.rest{background:var(--slate);border-color:var(--slate)}
+  .legend{
+    display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;
+    color:var(--ink-3);margin:12px 0 0;letter-spacing:.06em;
+  }
+  .legend span{display:flex;align-items:center;gap:6px}
+  .legend i{width:8px;height:12px;border-radius:1px;display:block;border:1px solid var(--line-soft)}
+
+  /* ---------- score bars ---------- */
+  .sb{display:flex;align-items:center;gap:9px}
+  .sb .bar{width:74px;height:7px;background:var(--void);border:1px solid var(--line-soft);border-radius:1px;overflow:hidden;flex:none}
+  .sb .bar i{display:block;height:100%}
+  .sb .bar i.f{background:var(--cyan)}
+  .sb .bar i.m{background:var(--orange)}
+  .sb .v{font-family:var(--mono);font-size:11.5px;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+  .dl{font-family:var(--mono);font-size:11px;font-variant-numeric:tabular-nums}
+  .dl.up{color:var(--cyan-hi)}
+  .dl.dn{color:var(--rose)}
+  .dl.zero{color:var(--ink-3)}
+  .pill{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;padding:2px 7px;border-radius:2px;
+    border:1px solid;
+  }
+  .pill.pain{color:var(--rose);border-color:rgba(190,18,60,.35);background:rgba(190,18,60,.07)}
+  .pill.weak{color:var(--amber);border-color:rgba(180,83,9,.34);background:rgba(180,83,9,.06)}
+  .pill.none{color:var(--ink-3);border-color:var(--line-soft);background:var(--surface-2)}
+  .pill.never{color:var(--slate);border-color:var(--line-soft);background:transparent}
+
+  /* ---------- data tab ---------- */
+  .cards2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+  .dc{background:var(--surface);border:1px solid var(--line-soft);border-radius:6px;padding:16px 18px}
+  .dc h3{
+    font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--cyan-hi);
+    margin:0 0 4px;font-weight:500;
+  }
+  .dc p{margin:0 0 10px;font-size:12.5px;color:var(--ink-3);line-height:1.8}
+  .dc ul{margin:0;padding:0;list-style:none;display:grid;gap:5px}
+  .dc li{font-family:var(--mono);font-size:11px;color:var(--ink-2);letter-spacing:.02em}
+  .dc li b{color:var(--cyan-hi);font-weight:500}
+  .note{
+    background:var(--surface-2);border:1px solid var(--line);border-left:2px solid var(--cyan);
+    border-radius:5px;padding:15px 17px;margin-top:16px;
+  }
+  .note strong{display:block;font-family:var(--display);font-weight:700;font-size:14px;margin-bottom:6px}
+  .note p{margin:0;font-size:12.5px;color:var(--ink-2);line-height:1.85}
+  code{font-family:var(--mono);font-size:11.5px;color:var(--cyan-hi)}
+
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line-soft);
+    font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-3);line-height:1.9}
+
+
+  /* ===== 実データ版の追加 ===== */
+  .gate{max-width:440px;margin:14vh auto;padding:0 24px}
+  .gate h2{font-family:var(--display);font-weight:900;font-size:20px;margin:0 0 8px}
+  .gate p{color:var(--ink-3);font-size:13px;line-height:1.85;margin:0 0 18px}
+  .gate input{
+    width:100%;padding:13px 15px;border-radius:6px;background:var(--surface);
+    border:1px solid var(--line);color:var(--ink);font-family:var(--mono);font-size:13px;
+  }
+  .gate button{
+    width:100%;margin-top:12px;padding:13px;border-radius:6px;border:1px solid var(--cyan);
+    background:var(--cyan);color:#fff;
+    font-family:var(--display);font-weight:900;font-size:15px;
+  }
+  .gate button:hover{filter:brightness(1.08)}
+  .gate .ng{color:var(--rose);font-size:12.5px;margin-top:10px;min-height:18px}
+  .spin{display:flex;align-items:center;gap:11px;color:var(--ink-3);font-family:var(--mono);
+    font-size:11px;letter-spacing:.1em;padding:60px 0}
+  .spin i{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--cyan-hi);
+    border-radius:50%;animation:sp .7s linear infinite;display:block}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media(prefers-reduced-motion:reduce){.spin i{animation:none}}
+  [hidden]{display:none!important}
+  tbody tr{cursor:pointer}
+  .bar-actions{display:flex;gap:10px;align-items:center;margin-left:auto}
+  .mini{
+    border:1px solid var(--line);background:var(--surface);color:var(--ink-3);
+    font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    padding:6px 11px;border-radius:3px;
+  }
+  .mini:hover{color:var(--cyan-hi);border-color:var(--cyan)}
+
+  /* ---- 詳細パネル ---- */
+  .ov{position:fixed;inset:0;background:rgba(15,23,42,.42);z-index:40;display:flex;
+      justify-content:flex-end;backdrop-filter:blur(2px)}
+  .dw{width:min(680px,100%);background:var(--surface);border-left:1px solid var(--line);
+      overflow-y:auto;padding:0 0 60px;box-shadow:-12px 0 40px -20px rgba(15,23,42,.35)}
+  .dw-bar{position:sticky;top:0;background:var(--surface);
+    border-bottom:1px solid var(--line-soft);padding:16px 22px;display:flex;align-items:center;gap:12px;z-index:2}
+  .dw-bar h3{font-family:var(--display);font-weight:900;font-size:18px;margin:0}
+  .dw-bar .uid{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em}
+  .dw-bar button{margin-left:auto;background:none;border:none;color:var(--ink-3);font-size:20px;line-height:1}
+  .dw-bar button:hover{color:var(--ink)}
+  .dw-body{padding:22px}
+  .dw-body h4{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cyan-hi);margin:26px 0 10px;font-weight:500}
+  .dw-body h4:first-child{margin-top:0}
+  .cal{display:grid;grid-template-columns:repeat(15,1fr);gap:3px}
+  .cal i{aspect-ratio:1;border-radius:2px;background:var(--void);border:1px solid var(--line-soft);display:block}
+  .cal i.run{background:var(--cyan-hi);border-color:var(--cyan-hi)}
+  .cal i.care{background:var(--teal);border-color:var(--teal)}
+  .cal i.rest{background:var(--slate);border-color:var(--slate)}
+  .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;
+      background:var(--line-soft);border:1px solid var(--line-soft);border-radius:5px;overflow:hidden}
+  .kv div{background:var(--surface);padding:12px 14px}
+  .kv small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+    color:var(--ink-3);text-transform:uppercase;margin-bottom:3px}
+  .kv b{font-family:var(--display);font-weight:900;font-size:22px;font-variant-numeric:tabular-nums}
+  .items{display:grid;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);
+    border-radius:5px;overflow:hidden}
+  .irow{background:var(--surface);padding:9px 14px;display:grid;
+    grid-template-columns:1fr auto auto;gap:12px;align-items:center;font-size:13px}
+  .irow .pip{display:flex;gap:3px}
+  .irow .pip i{width:22px;height:8px;border-radius:1px;background:var(--void);border:1px solid var(--line-soft)}
+  .irow[data-v="3"] .pip i.on{background:var(--cyan-hi);border-color:var(--cyan-hi)}
+  .irow[data-v="2"] .pip i.on{background:var(--slate);border-color:var(--slate)}
+  .irow[data-v="1"] .pip i.on{background:var(--amber);border-color:var(--amber)}
+  .irow[data-v="0"] .pip i.on{background:var(--rose);border-color:var(--rose)}
+  .irow .n{font-family:var(--mono);font-size:12px;color:var(--ink-2);width:16px;text-align:right}
+  .irow.blk{background:var(--surface-2);font-family:var(--mono);font-size:9.5px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);display:block}
+  .empty{color:var(--ink-3);font-size:13px;padding:14px 0}
+
+</style>
+</head>
+<body>
+
+<div id="gate" class="gate">
+  <h2>エンラボ 会員ダッシュボード</h2>
+  <p>管理者キーを入れてください。この端末に記憶するので、次からは不要です。</p>
+  <input id="key" type="password" placeholder="管理者キー" autocomplete="off">
+  <button id="enter">開く</button>
+  <div class="ng" id="ng"></div>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <div class="hin">
+      <p class="brandline"><b>Endurance Lab</b> Admin ／ 実データ</p>
+      <h1>会員ダッシュボード</h1>
+      <p class="sub">辞める人は、辞める前に押さなくなる。その一週間を見るための画面。</p>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div id="loading" class="spin"><i></i>読み込んでいます</div>
+
+    <div id="main" hidden>
+      <div class="kpis" id="kpis"></div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true" data-p="keep">継続</button>
+        <button class="tab" role="tab" aria-selected="false" data-p="test">フィジカルテスト</button>
+        <button class="tab" role="tab" aria-selected="false" data-p="fuel">補給計算</button>
+        <div class="bar-actions">
+          <button class="mini" id="reload">再読み込み</button>
+          <button class="mini" id="logout">キーを消す</button>
+        </div>
+      </div>
+
+      <div class="pane" id="p-keep">
+        <section>
+          <h2 class="sec">声をかける相手 <span class="cnt" id="fcount"></span></h2>
+          <p class="lede">7日以上押していない人。退会理由の「時間がなくてできなかった」は、ここで止められる可能性がある。通知は送らない設計なので、動くのは主宰側。</p>
+          <div class="follow" id="follow"></div>
+        </section>
+        <section>
+          <h2 class="sec">会員一覧 <span class="cnt" id="mcount"></span></h2>
+          <p class="lede">表示名はLINEのプロフィール名です（本人が変えると変わります）。行をクリックすると、その人の90日ぶんの記録と測定履歴が開きます。直近30日は右が今日。</p>
+          <div class="tblwrap">
+            <table>
+              <thead><tr>
+                <th>LINE表示名</th><th>連続</th><th>通算</th><th>直近30日</th>
+                <th style="text-align:right">今月 走／整／休</th><th>最終記録</th>
+              </tr></thead>
+              <tbody id="mbody"></tbody>
+            </table>
+          </div>
+          <div class="legend">
+            <span><i style="background:var(--cyan-hi);border-color:var(--cyan-hi)"></i>走った</span>
+            <span><i style="background:var(--teal);border-color:var(--teal)"></i>整えた／鍛えた</span>
+            <span><i style="background:var(--slate);border-color:var(--slate)"></i>休んだ</span>
+            <span><i style="background:var(--void)"></i>記録なし</span>
+          </div>
+        </section>
+      </div>
+
+      <div class="pane" id="p-test" hidden>
+        <section>
+          <h2 class="sec">最新の測定 <span class="cnt" id="tcount"></span></h2>
+          <p class="lede">合計だけでなく柔軟性と動きの質を分けて見る。「1点の項目」と「痛み」が付いている人が、次に手を打つ相手。0点は痛みのフラグなので合計から除外している。</p>
+          <div class="tblwrap">
+            <table>
+              <thead><tr>
+                <th>LINE表示名</th><th>測定日</th><th>合計</th><th>前回比</th>
+                <th>柔軟性</th><th>動きの質</th><th>フラグ</th>
+              </tr></thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div class="pane" id="p-fuel" hidden>
+        <section>
+          <h2 class="sec">保存された補給計画 <span class="cnt" id="fucount"></span></h2>
+          <p class="lede">会員がどんなレースを想定して、何をどれだけ摂る計画を立てたか。行をクリックすると、その人の詳細が開きます。新しい順。</p>
+          <div class="tblwrap">
+            <table>
+              <thead><tr>
+                <th>LINE表示名</th><th>保存日</th><th>レース名</th>
+                <th style="text-align:right">距離</th><th style="text-align:right">D+</th>
+                <th style="text-align:right">想定時間</th>
+                <th style="text-align:right">総kcal</th><th style="text-align:right">水分</th><th style="text-align:right">Na</th>
+              </tr></thead>
+              <tbody id="fubody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <footer id="foot"></footer>
+    </div>
+
+    <div id="err" hidden>
+      <div class="dc" style="border-color:var(--rose)">
+        <h3 style="color:var(--rose)">読み込めませんでした</h3>
+        <p id="errmsg"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="ov" hidden>
+  <div class="dw">
+    <div class="dw-bar">
+      <div><h3 id="d-name"></h3><div class="uid" id="d-uid"></div></div>
+      <button id="d-close">✕</button>
+    </div>
+    <div class="dw-body" id="d-body"></div>
+  </div>
+</div>
+
+<script>
+
+const $ = (s) => document.querySelector(s);
+const API = 'https://lzlizdcrgarojpmrdbrj.supabase.co/functions/v1/enlab';
+const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6bGl6ZGNyZ2Fyb2pwbXJkYnJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5ODk4MDUsImV4cCI6MjEwMzU2NTgwNX0.81Sx8pwCx6SVG-f9xxZqM0MWa1EVHDQKPV85_jeOHsE';
+const LS = 'enlab_admin_key';
+let KEY = '', DATA = null;
+
+async function api(action, extra = {}){
+  const r = await fetch(API, {
+    method:'POST',
+    headers:{ 'content-type':'application/json', 'apikey':ANON, 'authorization':'Bearer '+ANON },
+    body: JSON.stringify({ action, adminKey: KEY, ...extra }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.detail || j.error || ('HTTP '+r.status));
+  return j;
+}
+
+/* ---------- gate ---------- */
+function openApp(){ $('#gate').hidden = true; $('#app').hidden = false; }
+$('#enter').onclick = async () => {
+  KEY = $('#key').value.trim();
+  if (!KEY) return;
+  $('#ng').textContent = '確認しています…';
+  try { await api('admin.overview'); }
+  catch(e){ $('#ng').textContent = 'キーが違うようです（' + e.message + '）'; return; }
+  try { localStorage.setItem(LS, KEY); } catch(e){}
+  openApp(); load();
+};
+$('#key').addEventListener('keydown', e => { if (e.key === 'Enter') $('#enter').click(); });
+$('#logout').onclick = () => { try { localStorage.removeItem(LS); } catch(e){} location.reload(); };
+$('#reload').onclick = () => load();
+
+/* ---------- helpers ---------- */
+const jstToday = () => new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+const dstr = (d) => d ? String(d).slice(0,10).replace(/-/g,'.') : '—';
+function dayList(n, endISO){
+  const out = [], end = new Date(endISO + 'T00:00:00Z');
+  for (let i = n-1; i >= 0; i--){
+    const d = new Date(end); d.setUTCDate(d.getUTCDate()-i);
+    out.push(d.toISOString().slice(0,10));
+  }
+  return out;
+}
+
+/* ---------- load ---------- */
+async function load(){
+  $('#loading').hidden = false; $('#main').hidden = true; $('#err').hidden = true;
+  try {
+    DATA = await api('admin.overview');
+    render();
+    $('#loading').hidden = true; $('#main').hidden = false;
+  } catch(e){
+    $('#loading').hidden = true;
+    $('#errmsg').textContent = e.message;
+    $('#err').hidden = false;
+  }
+}
+
+function render(){
+  const today = DATA.today || jstToday();
+  const days30 = dayList(30, today);
+
+  /* 記録を会員ごとにまとめる */
+  const byUser = new Map();
+  DATA.records.forEach(r => {
+    if (!byUser.has(r.line_user_id)) byUser.set(r.line_user_id, {});
+    byUser.get(r.line_user_id)[String(r.record_date).slice(0,10)] = r.type;
+  });
+  const latestBy = new Map(DATA.latest.map(a => [a.line_user_id, a]));
+
+  const M = DATA.members
+    .filter(m => !m.left_at)
+    .map(m => ({
+      ...m,
+      name: m.display_name || '（名前なし）',
+      days: days30.map(d => (byUser.get(m.line_user_id) || {})[d] || null),
+      test: latestBy.get(m.line_user_id) || null,
+    }));
+
+  /* KPI */
+  const n = M.length;
+  const activeWeek = M.filter(m => m.days_since_last !== null && m.days_since_last <= 6).length;
+  const follow = M.filter(m => m.status === 'watch' || m.status === 'risk' || m.status === 'never');
+  const noTest = M.filter(m => !m.test || !m.test.latest_on).length;
+  const FP = DATA.fuelPlans || [];
+  const fuelUsers = new Set(FP.map(f => f.line_user_id)).size;
+  const nameOf = new Map(DATA.members.map(m => [m.line_user_id, m.display_name || '（名前なし）']));
+  $('#kpis').innerHTML = [
+    ['good','会員数', n, '', '退会者を除く在籍'],
+    ['good','今週アクティブ', activeWeek, '／'+n, n ? Math.round(activeWeek/n*100)+'% が7日以内に押している' : '—'],
+    [follow.length ? 'warn':'good','要フォロー', follow.length, '人', '7日以上、記録がない'],
+    [noTest ? 'bad':'good','テスト未実施', noTest, '人', '測っていないと比較が始まらない'],
+    ['good','補給計算の利用', fuelUsers, '人', (DATA.fuelPlans||[]).length + ' 件の計画を保存'],
+  ].map(([c,l,v,u,note]) =>
+    '<div class="kpi '+c+'"><small>'+l+'</small><b>'+v+'<span class="u">'+u+'</span></b><em>'+note+'</em></div>'
+  ).join('');
+
+  /* 要フォロー */
+  const ord = { never:0, risk:1, watch:2 };
+  follow.sort((a,b) => (ord[a.status]-ord[b.status]) || ((b.days_since_last??999)-(a.days_since_last??999)));
+  $('#fcount').textContent = follow.length + ' 人';
+  $('#follow').innerHTML = follow.map(m => {
+    const cls = m.status === 'watch' ? 'watch' : 'risk';
+    const lab = m.status === 'never' ? 'NEVER' : (m.status === 'risk' ? 'RISK' : 'WATCH');
+    const big = m.days_since_last === null
+      ? '<div class="big">—<span>一度も記録なし</span></div>'
+      : '<div class="big">'+m.days_since_last+'<span>日 記録なし</span></div>';
+    return '<div class="fc '+cls+'" data-u="'+m.line_user_id+'">'+
+      '<div class="r1"><span class="nm">'+esc(m.name)+'</span><span class="st">'+lab+'</span></div>'+
+      big +
+      '<div class="meta">通算 '+m.total_days+'日　／　直近30日 '+m.days.filter(Boolean).length+'日<br>'+
+      (m.test && m.test.latest_on ? 'フィジカルテスト '+m.test.total_got+'/'+m.test.total_max+'（'+dstr(m.test.latest_on)+'）' : 'フィジカルテスト 未実施')+
+      '</div></div>';
+  }).join('') || '<p class="lede">7日以上あいている人はいません。</p>';
+
+  /* 会員一覧 */
+  const rows = [...M].sort((a,b) => (b.streak-a.streak) || ((a.days_since_last??999)-(b.days_since_last??999)));
+  $('#mcount').textContent = n + ' 人';
+  $('#mbody').innerHTML = rows.map(m => {
+    const hm = m.days.map(t => '<i class="'+(t||'')+'"></i>').join('');
+    const ds = m.days_since_last;
+    const last = ds === null ? '—' : (ds === 0 ? '今日' : ds+'日前');
+    const col = m.status === 'risk' ? 'var(--rose)' : m.status === 'watch' ? 'var(--amber)' : 'var(--ink-3)';
+    return '<tr data-u="'+m.line_user_id+'">'+
+      '<td class="nm"><span class="dot '+m.status+'"></span>'+esc(m.name)+'</td>'+
+      '<td class="num"><span class="streak '+(m.streak?'on':'off')+'">'+m.streak+'</span></td>'+
+      '<td class="num">'+m.total_days+'</td>'+
+      '<td><span class="hm">'+hm+'</span></td>'+
+      '<td class="num">'+m.run_this_month+' ／ '+m.care_this_month+' ／ '+m.rest_this_month+'</td>'+
+      '<td class="num" style="color:'+col+'">'+last+'</td></tr>';
+  }).join('');
+
+  /* フィジカルテスト */
+  const tested = M.filter(m => m.test && m.test.latest_on)
+                  .sort((a,b) => a.test.total_got - b.test.total_got);
+  const untested = M.filter(m => !m.test || !m.test.latest_on);
+  $('#tcount').textContent = tested.length + ' / ' + n + ' 人';
+  $('#tbody').innerHTML =
+    tested.map(m => {
+      const t = m.test, d = t.delta;
+      const dc = d > 0 ? 'up' : (d < 0 ? 'dn' : 'zero');
+      const dt = d === null || d === undefined ? '—' : (d > 0 ? '▲ +'+d : (d < 0 ? '▼ '+d : '±0'));
+      const flags = (t.pain_items ? '<span class="pill pain">痛み '+t.pain_items+'</span> ' : '')
+                  + (t.weak_items ? '<span class="pill weak">1点 '+t.weak_items+'</span>' : '')
+                  || '<span class="pill none">なし</span>';
+      return '<tr data-u="'+m.line_user_id+'">'+
+        '<td class="nm">'+esc(m.name)+'</td>'+
+        '<td class="num" style="color:var(--ink-3)">'+dstr(t.latest_on)+'</td>'+
+        '<td class="num"><b style="font-family:var(--display);font-size:15px">'+t.total_got+'</b>'+
+          '<span style="color:var(--ink-3);font-size:11px"> /'+t.total_max+'</span></td>'+
+        '<td class="num"><span class="dl '+dc+'">'+dt+'</span></td>'+
+        '<td>'+bar(t.flex_got, t.flex_max, 'f')+'</td>'+
+        '<td>'+bar(t.move_got, t.move_max, 'm')+'</td>'+
+        '<td>'+flags+'</td></tr>';
+    }).join('') +
+    untested.map(m =>
+      '<tr data-u="'+m.line_user_id+'" style="opacity:.55"><td class="nm">'+esc(m.name)+'</td>'+
+      '<td class="num" style="color:var(--ink-3)">—</td><td class="num">—</td><td class="num">—</td>'+
+      '<td>—</td><td>—</td><td><span class="pill never">未実施</span></td></tr>').join('');
+
+  /* 補給計算 */
+  $('#fucount').textContent = FP.length + ' 件 ／ ' + fuelUsers + ' 人';
+  $('#fubody').innerHTML = FP.length ? FP.map(f => {
+    const pl = f.payload || {}, st = pl.state || {}, rc = st.race || {}, rs = pl.results || {};
+    const num = (v, u) => (v === undefined || v === null || v === '' || Number(v) === 0) ? '—' : (v + (u || ''));
+    const hm = (rc.timeH || rc.timeM) ? ((rc.timeH || 0) + 'h' + String(rc.timeM || 0).padStart(2,'0')) : '—';
+    return '<tr data-fuel="' + f.id + '">' +
+      '<td class="nm">' + esc(nameOf.get(f.line_user_id) || '（退会/不明）') + '</td>' +
+      '<td class="num" style="color:var(--ink-3)">' + dstr(f.created_at) + '</td>' +
+      '<td>' + esc(f.race_name || '（レース名なし）') + '</td>' +
+      '<td class="num">' + num(rc.distance, 'km') + '</td>' +
+      '<td class="num">' + num(rc.elevationUp, 'm') + '</td>' +
+      '<td class="num">' + hm + '</td>' +
+      '<td class="num"><b>' + (rs.totalCal || '—') + '</b></td>' +
+      '<td class="num">' + (rs.totalWater ? rs.totalWater + 'L' : '—') + '</td>' +
+      '<td class="num">' + (rs.totalNa ? rs.totalNa + 'mg' : '—') + '</td>' +
+    '</tr>';
+  }).join('') : '<tr><td colspan="9" style="color:var(--ink-3);padding:22px 14px">まだ保存された補給計画はありません。</td></tr>';
+
+  $('#foot').textContent = 'Endurance Lab ／ 管理画面　—　' + dstr(today) + ' 時点';
+
+  document.querySelectorAll('[data-u]').forEach(el => {
+    el.onclick = () => openDetail(el.dataset.u);
+  });
+  document.querySelectorAll('[data-fuel]').forEach(el => {
+    el.onclick = () => openFuel(Number(el.dataset.fuel));
+  });
+}
+
+function bar(got, max, cls){
+  if (!max) return '—';
+  return '<span class="sb"><span class="bar"><i class="'+cls+'" style="width:'+(got/max*100)+'%"></i></span>'+
+         '<span class="v">'+got+' / '+max+'</span></span>';
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ---------- 詳細 ---------- */
+$('#d-close').onclick = () => $('#ov').hidden = true;
+$('#ov').onclick = (e) => { if (e.target.id === 'ov') $('#ov').hidden = true; };
+
+async function openDetail(uid){
+  const m = DATA.members.find(x => x.line_user_id === uid);
+  $('#d-name').textContent = (m && m.display_name) || '（名前なし）';
+  $('#d-uid').textContent = uid;
+  $('#d-body').innerHTML = '<div class="spin"><i></i>読み込んでいます</div>';
+  $('#ov').hidden = false;
+  try {
+    const d = await api('admin.detail', { lineUserId: uid });
+    $('#d-body').innerHTML = detailHTML(m, d);
+  } catch(e){
+    $('#d-body').innerHTML = '<p class="empty">読み込めませんでした（'+esc(e.message)+'）</p>';
+  }
+}
+
+function detailHTML(m, d){
+  const today = DATA.today || jstToday();
+  const map = {};
+  d.records.forEach(r => map[String(r.record_date).slice(0,10)] = r.type);
+  const cal = dayList(90, today).map(x => '<i class="'+(map[x]||'')+'" title="'+x+'"></i>').join('');
+
+  const cnt = { run:0, care:0, rest:0 };
+  d.records.forEach(r => cnt[r.type]++);
+
+  let html =
+    '<h4>継続</h4>'+
+    '<div class="kv">'+
+      '<div><small>連続</small><b style="color:var(--cyan-hi)">'+(m?m.streak:0)+'</b></div>'+
+      '<div><small>通算</small><b>'+(m?m.total_days:0)+'</b></div>'+
+      '<div><small>最終記録</small><b style="font-size:15px">'+dstr(m&&m.last_record)+'</b></div>'+
+    '</div>'+
+    '<h4>直近90日</h4><div class="cal">'+cal+'</div>'+
+    '<div class="legend" style="margin-top:10px">'+
+      '<span><i style="background:var(--cyan-hi);border-color:var(--cyan-hi)"></i>走った '+cnt.run+'</span>'+
+      '<span><i style="background:var(--teal);border-color:var(--teal)"></i>整えた／鍛えた '+cnt.care+'</span>'+
+      '<span><i style="background:var(--slate);border-color:var(--slate)"></i>休んだ '+cnt.rest+'</span>'+
+    '</div>';
+
+  const fps = d.fuelPlans || [];
+  html += '<h4>補給計算</h4>';
+  html += fps.length ? ('<div class="items">' + fps.map(f => {
+      const pl = f.payload || {}, st = pl.state || {}, rc = st.race || {}, rs = pl.results || {};
+      const line = [rc.distance ? rc.distance + 'km' : null,
+                    rc.elevationUp ? 'D+' + rc.elevationUp + 'm' : null,
+                    rs.totalCal ? rs.totalCal + 'kcal' : null,
+                    rs.totalWater ? rs.totalWater + 'L' : null].filter(Boolean).join('　');
+      return '<div class="irow"><span>' + esc(f.race_name || '（レース名なし）') + '</span>' +
+        '<span class="v" style="font-family:var(--mono);font-size:11.5px;color:var(--ink-3)">' + line + '</span>' +
+        '<span class="n" style="width:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3)">' + dstr(f.created_at) + '</span></div>';
+    }).join('') + '</div>') : '<p class="empty">まだ補給計算を保存していません。</p>';
+
+  if (!d.assessments.length){
+    html += '<h4>フィジカルテスト</h4><p class="empty">まだ測定していません。</p>';
+    return html;
+  }
+
+  html += '<h4>フィジカルテストの推移</h4><div class="items">' +
+    d.assessments.map(a =>
+      '<div class="irow"><span>'+dstr(a.tested_on)+'</span>'+
+      '<span class="v" style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">'+
+        '柔 '+a.flex_got+'/'+a.flex_max+'　動 '+a.move_got+'/'+a.move_max+'</span>'+
+      '<span class="n" style="width:auto;font-family:var(--display);font-weight:900;font-size:15px;color:var(--cyan-hi)">'+
+        a.total_got+'<span style="font-size:11px;color:var(--ink-3)">/'+a.total_max+'</span></span></div>'
+    ).join('') + '</div>';
+
+  /* 最新回の項目別 */
+  const latest = d.assessments[0];
+  const vals = {};
+  d.values.filter(v => v.assessment_id === latest.assessment_id)
+          .forEach(v => vals[v.item_key] = Number(v.value));
+  const items = DATA.items || [];
+  let block = '';
+  html += '<h4>最新回（'+dstr(latest.tested_on)+'）の項目別</h4><div class="items">';
+  items.forEach(it => {
+    if (it.block !== block){
+      block = it.block;
+      html += '<div class="irow blk">'+(block === 'flex' ? 'Block 1 ── 柔軟性' : 'Block 2 ── 動きの質')+'</div>';
+    }
+    const v = vals[it.item_key];
+    const pips = [1,2,3].map(k => '<i class="'+(v !== undefined && k <= v ? 'on' : '')+'"></i>').join('');
+    html += '<div class="irow" data-v="'+(v === undefined ? '' : v)+'">'+
+      '<span>'+esc(it.label)+'</span><span class="pip">'+pips+'</span>'+
+      '<span class="n">'+(v === undefined ? '—' : v)+'</span></div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+/* ---------- 補給計算の全項目 ---------- */
+const SWEAT_LABEL = { low:'少ない', normal:'ふつう', high:'多い' };
+const GENDER_LABEL = { male:'男性', female:'女性' };
+
+function kv(rows){
+  return '<div class="kv">' + rows.map(([k,v]) =>
+    '<div><small>'+k+'</small><b style="font-size:18px">'+(v===''||v===undefined||v===null?'—':v)+'</b></div>'
+  ).join('') + '</div>';
+}
+
+function openFuel(id){
+  const f = (DATA.fuelPlans || []).find(x => x.id === id);
+  if (!f) return;
+  const nm = (DATA.members.find(m => m.line_user_id === f.line_user_id) || {}).display_name || '（退会/不明）';
+  $('#d-name').textContent = f.race_name || '（レース名なし）';
+  $('#d-uid').textContent  = nm + '　／　' + dstr(f.created_at) + ' 保存';
+
+  const pl = f.payload || {}, st = pl.state || {};
+  const pr = st.profile || {}, rc = st.race || {}, sp = st.supply || {};
+  const rs = st.results || {}, sm = pl.results || {};
+  const as = st.asPoints || [];
+  const sg = pl.segments || [];
+  const n = (v, u) => (v === undefined || v === null || v === '') ? '—' : (v + (u || ''));
+
+  let h = '';
+
+  h += '<h4>ランナー</h4>' + kv([
+    ['性別',       GENDER_LABEL[pr.gender] || '—'],
+    ['体重',       n(pr.weight, ' kg')],
+    ['装備重量',   n(pr.equipWeight, ' kg')],
+    ['発汗タイプ', SWEAT_LABEL[pr.sweatType] || pr.sweatType || '—'],
+  ]);
+
+  h += '<h4>レース条件</h4>' + kv([
+    ['距離',     n(rc.distance, ' km')],
+    ['獲得標高', n(rc.elevationUp, ' m')],
+    ['下り',     n(rc.elevationDown, ' m')],
+    ['想定時間', (rc.timeH || rc.timeM) ? ((rc.timeH||0)+'h'+String(rc.timeM||0).padStart(2,'0')) : '—'],
+    ['気温',     n(rc.temp, ' ℃')],
+    ['湿度',     n(rc.humidity, ' %')],
+    ['強度',     rs.displayIntensity || rc.intensity || '—'],
+    ['想定速度', n(rs.speedKmh, ' km/h')],
+  ]);
+
+  h += '<h4>使うジェルの前提</h4>' + kv([
+    ['炭水化物 / 個', n(sp.gelCarbs, ' g')],
+    ['ナトリウム / 個', n(sp.gelNa, ' mg')],
+  ]);
+
+  h += '<h4>合計</h4>' + kv([
+    ['エネルギー', n(sm.totalCal || rs.totalCal, ' kcal')],
+    ['水分',       n(sm.totalWater || rs.totalWaterL, ' L')],
+    ['ナトリウム', n(sm.totalNa || rs.totalNa, ' mg')],
+    ['食塩',       n(rs.totalSalt, ' g')],
+  ]);
+
+  h += '<h4>1時間あたり</h4>' + kv([
+    ['炭水化物',   n(sm.recCarbs || rs.hourlyCarbs, ' g')],
+    ['水分',       n(sm.recWater || rs.hourlyWater, ' mL')],
+    ['ナトリウム', n(sm.recNa || rs.hourlyNa, ' mg')],
+    ['食塩',       n(rs.hourlySalt, ' g')],
+  ]);
+
+  if (sg.length){
+    h += '<h4>区間ごとの補給計画</h4><div class="tblwrap"><table><thead><tr>' +
+      '<th>区間</th><th style="text-align:right">距離</th><th style="text-align:right">水分</th>' +
+      '<th style="text-align:right">糖質</th><th style="text-align:right">Na</th>' +
+      '<th style="text-align:right">ジェル</th><th style="text-align:right">不足Na</th><th style="text-align:right">食塩</th>' +
+      '</tr></thead><tbody>' +
+      sg.map(x =>
+        '<tr'+(x.isSupport?' style="background:var(--surface-2)"':'')+'>'+
+        '<td>'+esc(x.label||'')+'</td>'+
+        '<td class="num">'+(x.diff!==undefined?Number(x.diff).toFixed(1)+'km':'—')+'</td>'+
+        '<td class="num">'+n(x.reqWater,'mL')+'</td>'+
+        '<td class="num">'+n(x.reqCarbs,'g')+'</td>'+
+        '<td class="num">'+n(x.reqNa,'mg')+'</td>'+
+        '<td class="num"><b>'+n(x.gels,'個')+'</b></td>'+
+        '<td class="num">'+n(x.naDeficit,'mg')+'</td>'+
+        '<td class="num">'+n(x.saltDef,'g')+'</td></tr>'
+      ).join('') + '</tbody></table></div>';
+  }
+
+  if (as.length){
+    h += '<h4>エイドステーション</h4><div class="items">' +
+      [...as].sort((a,b)=>parseFloat(a.km||0)-parseFloat(b.km||0)).map(a2 =>
+        '<div class="irow"><span>'+esc(a2.name||'（名称なし）')+
+        (a2.isSupport?' <span class="pill weak">サポート</span>':'')+'</span>'+
+        '<span></span><span class="n" style="width:auto">'+n(a2.km,' km')+'</span></div>'
+      ).join('') + '</div>';
+  }
+
+  h += '<h4>保存された生データ</h4>' +
+       '<pre style="background:var(--surface-2);border:1px solid var(--line-soft);border-radius:5px;' +
+       'padding:12px;overflow-x:auto;font-family:var(--mono);font-size:10.5px;line-height:1.6;color:var(--ink-2);' +
+       'white-space:pre-wrap;word-break:break-all">' + esc(JSON.stringify(pl, null, 1)) + '</pre>';
+
+  $('#d-body').innerHTML = h;
+  $('#ov').hidden = false;
+}
+
+/* ---------- タブ ---------- */
+document.querySelectorAll('.tab').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected','false'));
+    t.setAttribute('aria-selected','true');
+    document.querySelectorAll('.pane').forEach(p => p.hidden = true);
+    $('#p-' + t.dataset.p).hidden = false;
+  };
+});
+
+/* ---------- 起動 ---------- */
+(function(){
+  let saved = '';
+  try { saved = localStorage.getItem(LS) || ''; } catch(e){}
+  if (saved){ KEY = saved; openApp(); load(); }
+})();
+
+</script>
+</body>
+</html>
