@@ -1188,46 +1188,48 @@ function drawCard(){
   g.strokeStyle = 'rgba(56,189,248,0.25)'; g.lineWidth = 1;
   g.beginPath(); g.moveTo(M + mw + 26, y - 8); g.lineTo(W - M, y - 8); g.stroke();
 
-  /* ---------- title ---------- */
-  y += gp(116);
+  /* ---------- title（左）＋ スコア（右）---------- */
+  const rightAt = (t, yy) => g.fillText(t, W - M - g.measureText(t).width, yy);
+  const rightSp = (t, yy, tr) => {
+    let w = 0; for (const ch of t) w += g.measureText(ch).width + tr;
+    return spaced(g, t, W - M - (w - tr), yy, tr);
+  };
+
+  /* 左：タイトルと日付 */
+  y = 176 + gp(116);
   g.fillStyle = C.ink; g.font = ZEN('900', 48);
   g.fillText('初期テスト', M, y);
-  y += gp(52);
+  const dateY = y + gp(52);
   g.fillStyle = C.ink3; g.font = MONO('400', 26);
-  g.fillText(CUR_ON.replace(/-/g,'.') + (hasPrev ? '  ／  ' + gapText() : ''), M, y);
+  g.fillText(CUR_ON.replace(/-/g,'.') + (hasPrev ? '  ／  ' + gapText() : ''), M, dateY);
 
-  /* ---------- hero ---------- */
-  y += gp(122);
+  /* 右：スコア */
+  const bigSize = story ? 300 : 250;
+  const hLabelY = 176 + gp(74);
   g.fillStyle = C.ink3; g.font = MONO('400', 24);
-  spaced(g, !measured ? '記録なし' : (hasPrev ? '前回からの変化' : '今回のスコア'), M, y, 3);
+  rightSp(!measured ? '記録なし' : (hasPrev ? '前回からの変化' : '今回のスコア'), hLabelY, 3);
 
-  y += Math.max(gp(160), Math.round((story ? 186 : 168) * 0.88));
+  const numY = hLabelY + Math.round(bigSize * 0.90);
   const heroTxt = !measured ? '—' : (hasPrev ? ((D.d >= 0 ? '+' : '') + D.d) : String(D.tot));
   g.save();
-  g.font = ZEN('900', story ? 186 : 168);
-  const heroW = g.measureText(heroTxt).width;      /* ← restore の前に測る */
-  g.shadowColor = 'rgba(56,189,248,0.5)'; g.shadowBlur = 60;
+  g.font = ZEN('900', bigSize);
+  g.shadowColor = 'rgba(56,189,248,0.5)'; g.shadowBlur = 88;
   g.fillStyle = C.cyanHi;
-  g.fillText(heroTxt, M, y);
+  rightAt(heroTxt, numY);
   g.restore();
 
-  if (measured){
-    const sx = M + heroW + f(38);
-    if (priv){
-      if (hasPrev){
-        g.fillStyle = C.ink2; g.font = ZEN('700', 38);
-        g.fillText('点、伸びました', sx, y - f(8));
-      }
-    } else if (hasPrev){
-      g.fillStyle = C.ink2; g.font = MONO('400', 42);
-      g.fillText(D.prevTot + ' → ' + D.tot, sx, y - f(30));
-      g.fillStyle = C.ink3; g.font = MONO('400', 28);
-      g.fillText('/ ' + D.max, sx, y + f(18));
-    } else {
-      g.fillStyle = C.ink3; g.font = MONO('400', 30);
-      g.fillText('/ ' + D.max, sx, y - f(6));
-    }
+  let subY = numY;
+  if (measured && !priv){
+    subY += f(52);
+    g.fillStyle = C.ink2; g.font = MONO('400', story ? 38 : 33);
+    rightAt(hasPrev ? (D.prevTot + ' → ' + D.tot + ' / ' + D.max) : ('/ ' + D.max), subY);
+  } else if (measured && priv && hasPrev){
+    subY += f(46);
+    g.fillStyle = C.ink2; g.font = ZEN('700', story ? 34 : 30);
+    rightAt('点、伸びました', subY);
   }
+
+  y = Math.max(dateY, subY) + gp(96);
 
   /* ---------- blocks ---------- */
   y += gp(112);
