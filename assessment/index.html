@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>初期テスト ／ Endurance Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+
+  /* ============================================================
+     Endurance Lab ── dark only, by design.
+     ネイビー #0F172A × シアン #0EA5E9 × オレンジ #F26E20
+     ============================================================ */
+  :root{
+    color-scheme:dark;
+    --void:#04080F;
+    --page:#070D18;
+    --navy:#0F172A;
+    --surface:#111D31;
+    --surface-2:#17263E;
+    --raise:#1B2F4C;
+    --line:#223B5C;
+    --line-soft:#1A2E49;
+    --hair:rgba(56,189,248,.22);
+    --ink:#EAF2FB;
+    --ink-2:#A9BDD4;
+    --ink-3:#6E85A2;
+    --cyan:#0EA5E9;
+    --cyan-hi:#38BDF8;
+    --cyan-dim:#0B3B57;
+    --orange:#F26E20;
+    --orange-dim:#3A2010;
+    --rose:#FB7185;
+    --rose-dim:#3A1622;
+    --s3:#38BDF8;  --s3-bg:#0B2E44;  --s3-line:#1E5B7E;
+    --s2:#8AA1BC;  --s2-bg:#18263B;  --s2-line:#2C4362;
+    --s1:#F59A4E;  --s1-bg:#33200F;  --s1-line:#6B4119;
+    --s0:#FB7185;  --s0-bg:#331522;  --s0-line:#68283C;
+    --display:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    --body:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    --mono:"IBM Plex Mono","SFMono-Regular",Menlo,monospace;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;color:var(--ink);
+    font-family:var(--body);font-size:14px;line-height:1.8;
+    -webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(900px 620px at 50% -8%, rgba(14,165,233,.13), transparent 62%),
+      linear-gradient(180deg,var(--page),var(--void));
+    background-attachment:fixed;
+  }
+  button{font-family:inherit;cursor:pointer}
+  :focus-visible{outline:2px solid var(--cyan-hi);outline-offset:2px}
+
+  .stage{
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:28px 16px 64px;gap:16px;
+  }
+  .brandline{
+    max-width:420px;width:100%;display:flex;align-items:center;gap:12px;
+    font-family:var(--mono);font-size:10px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--ink-3);
+  }
+  .brandline::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--hair),transparent)}
+  .brandline b{color:var(--cyan-hi);font-weight:500}
+  .stage-note{
+    max-width:420px;width:100%;font-family:var(--mono);font-size:10.5px;
+    letter-spacing:.06em;color:var(--ink-3);line-height:1.8;
+  }
+
+  .phone{
+    width:100%;max-width:420px;background:var(--navy);
+    border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    display:flex;flex-direction:column;min-height:min(770px,86vh);
+    box-shadow:0 0 0 1px rgba(56,189,248,.06),0 30px 70px -40px rgba(0,0,0,1),
+               0 0 90px -50px rgba(14,165,233,.5);
+  }
+
+  /* ---- app bar ---- */
+  .bar{
+    display:flex;align-items:center;gap:11px;padding:14px 16px 12px;
+    background:linear-gradient(180deg,var(--surface),var(--navy));
+    border-bottom:1px solid var(--line-soft);position:sticky;top:0;z-index:6;
+  }
+  .bar::after{
+    content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+    background:linear-gradient(90deg,var(--cyan),transparent 55%);opacity:.5;
+  }
+  .bar .title{font-family:var(--display);font-weight:700;font-size:14.5px;letter-spacing:.02em}
+  .bar .right{
+    margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink-3);
+    letter-spacing:.14em;text-transform:uppercase;
+  }
+  .iconbtn{border:none;background:transparent;color:var(--ink-2);font-size:16px;padding:2px 4px;line-height:1}
+  .iconbtn:hover{color:var(--cyan-hi)}
+
+  .progress{height:2px;background:var(--surface-2)}
+  .progress > i{
+    display:block;height:100%;transition:width .35s cubic-bezier(.4,0,.2,1);
+    background:linear-gradient(90deg,var(--cyan),var(--cyan-hi));
+    box-shadow:0 0 10px rgba(56,189,248,.7);
+  }
+
+  .scroll{flex:1;overflow-y:auto;padding:22px 16px 30px}
+  .scroll::-webkit-scrollbar{width:6px}
+  .scroll::-webkit-scrollbar-thumb{background:var(--raise);border-radius:3px}
+  .screen[hidden]{display:none!important}
+
+  h1{font-family:var(--display);font-weight:900;font-size:24px;line-height:1.4;margin:0 0 12px;text-wrap:balance}
+  h2{font-family:var(--display);font-weight:700;font-size:16.5px;margin:0 0 7px}
+  p{margin:0 0 15px;color:var(--ink-2)}
+  .muted{color:var(--ink-3);font-size:12.5px;line-height:1.85}
+
+  .eyebrow{
+    font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--cyan-hi);margin:0 0 11px;display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::after{content:"";flex:1;height:1px;background:var(--hair)}
+
+  .chip{
+    display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+    padding:3px 8px;border-radius:2px;text-transform:uppercase;
+  }
+  .chip.flex{background:var(--s3-bg);color:var(--s3);border:1px solid var(--s3-line)}
+  .chip.move{background:var(--s1-bg);color:var(--s1);border:1px solid var(--s1-line)}
+  .chip.gear{background:var(--surface-2);color:var(--ink-3);border:1px solid var(--line-soft);text-transform:none;letter-spacing:.04em}
+
+  /* ---- start ---- */
+  .plan{
+    border:1px solid var(--line-soft);border-radius:5px;overflow:hidden;margin:20px 0 18px;
+  }
+  .plan-h{
+    background:var(--surface-2);font-family:var(--mono);font-size:10px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
+    padding:8px 14px;border-bottom:1px solid var(--line-soft);
+  }
+  .plan-h.f{color:var(--s3);box-shadow:inset 2px 0 0 var(--cyan)}
+  .plan-h.m{color:var(--s1);box-shadow:inset 2px 0 0 var(--orange);border-top:1px solid var(--line-soft)}
+  .plan-i{
+    background:var(--navy);padding:10px 14px;display:flex;align-items:center;gap:12px;
+    font-size:13.5px;border-bottom:1px solid var(--line-soft);
+  }
+  .plan-i:last-child{border-bottom:none}
+  .plan-i .n{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:14px;flex:none}
+  .plan-i .lr{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.1em}
+
+  .btn{
+    display:block;width:100%;text-align:center;padding:14px;border-radius:6px;
+    border:1px solid var(--cyan);background:linear-gradient(180deg,var(--cyan),#0284c7);
+    color:#04121C;font-family:var(--display);font-weight:900;font-size:15px;letter-spacing:.03em;
+    box-shadow:0 0 24px -8px rgba(14,165,233,.85);
+  }
+  .btn:hover{filter:brightness(1.1)}
+  .btn.ghost{
+    background:transparent;color:var(--ink-2);border-color:var(--line);box-shadow:none;font-weight:700;
+  }
+  .btn.ghost:hover{background:var(--surface);color:var(--ink);filter:none}
+  .btn.small{padding:11px;font-size:13.5px}
+  .btnrow{display:flex;gap:10px;margin-top:18px}
+  .btnrow .btn{margin:0}
+  .demolink{
+    display:block;width:100%;background:none;border:none;color:var(--ink-3);
+    font-size:11px;font-family:var(--mono);letter-spacing:.06em;margin-top:14px;
+    text-decoration:underline;text-underline-offset:3px;padding:6px;
+  }
+  .demolink:hover{color:var(--cyan-hi)}
+
+  /* ---- video ---- */
+  .video{
+    position:relative;aspect-ratio:16/9;border-radius:5px;overflow:hidden;
+    border:1px solid var(--line);margin:16px 0 14px;
+    background:
+      linear-gradient(rgba(56,189,248,.05) 1px,transparent 1px) 0 0/100% 22px,
+      linear-gradient(90deg,rgba(56,189,248,.05) 1px,transparent 1px) 0 0/22px 100%,
+      linear-gradient(150deg,var(--surface-2),var(--navy));
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  }
+  .video::before,.video::after{
+    content:"";position:absolute;width:12px;height:12px;border:1px solid var(--cyan);opacity:.55;
+  }
+  .video::before{top:8px;left:8px;border-right:none;border-bottom:none}
+  .video::after{bottom:8px;right:8px;border-left:none;border-top:none}
+  .video .play{
+    width:44px;height:44px;border-radius:50%;border:1px solid var(--cyan);
+    background:rgba(14,165,233,.14);display:grid;place-items:center;
+    color:var(--cyan-hi);font-size:14px;padding-left:3px;
+    box-shadow:0 0 26px -6px rgba(14,165,233,.75);
+  }
+  .video .lbl{
+    font-family:var(--mono);font-size:9.5px;color:var(--ink-3);
+    letter-spacing:.16em;text-align:center;padding:0 22px;text-transform:uppercase;
+  }
+
+  /* ---- score input ---- */
+  .sidelbl{
+    font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--cyan-hi);
+    margin:20px 0 8px;display:flex;align-items:center;gap:9px;text-transform:uppercase;
+  }
+  .sidelbl::after{content:"";flex:1;height:1px;background:var(--hair)}
+  .opts{display:grid;gap:7px}
+  .opt{
+    display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:start;
+    width:100%;text-align:left;padding:11px 13px;border-radius:5px;
+    background:var(--surface);border:1px solid var(--line-soft);color:var(--ink-2);
+    font-size:13px;line-height:1.65;transition:background .14s,border-color .14s;
+  }
+  .opt:hover{background:var(--surface-2);border-color:var(--line)}
+  .opt .n{
+    font-family:var(--display);font-weight:900;font-size:15px;text-align:center;
+    border-radius:3px;padding:2px 0;font-variant-numeric:tabular-nums;
+  }
+  .opt[data-v="3"] .n{background:var(--s3-bg);color:var(--s3)}
+  .opt[data-v="2"] .n{background:var(--s2-bg);color:var(--s2)}
+  .opt[data-v="1"] .n{background:var(--s1-bg);color:var(--s1)}
+  .opt[data-v="0"] .n{background:var(--s0-bg);color:var(--s0)}
+  .opt[aria-pressed="true"]{border-width:1px;color:var(--ink)}
+  .opt[data-v="3"][aria-pressed="true"]{border-color:var(--s3);background:var(--s3-bg);box-shadow:0 0 22px -10px var(--s3)}
+  .opt[data-v="2"][aria-pressed="true"]{border-color:var(--s2);background:var(--s2-bg)}
+  .opt[data-v="1"][aria-pressed="true"]{border-color:var(--s1);background:var(--s1-bg);box-shadow:0 0 22px -10px var(--s1)}
+  .opt[data-v="0"][aria-pressed="true"]{border-color:var(--s0);background:var(--s0-bg);box-shadow:0 0 22px -10px var(--s0)}
+
+  /* ---- tabs ---- */
+  .tabs{
+    display:flex;gap:0;padding:0 12px;background:var(--surface);
+    border-bottom:1px solid var(--line-soft);position:sticky;top:0;z-index:5;
+    overflow-x:auto;scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{
+    border:none;background:none;padding:12px 12px 10px;font-size:12.5px;
+    color:var(--ink-3);border-bottom:2px solid transparent;white-space:nowrap;
+    font-family:var(--display);font-weight:500;
+  }
+  .tab:hover{color:var(--ink-2)}
+  .tab[aria-selected="true"]{
+    color:var(--cyan-hi);border-bottom-color:var(--cyan);font-weight:700;
+    text-shadow:0 0 18px rgba(56,189,248,.6);
+  }
+
+  /* ---- total ---- */
+  .total{
+    position:relative;background:linear-gradient(160deg,var(--surface),var(--navy));
+    border:1px solid var(--line);border-radius:6px;padding:20px 20px 18px;margin-bottom:14px;
+  }
+  .total::before,.total::after{
+    content:"";position:absolute;width:14px;height:14px;border:1px solid var(--cyan);opacity:.5;
+  }
+  .total::before{top:9px;left:9px;border-right:none;border-bottom:none}
+  .total::after{bottom:9px;right:9px;border-left:none;border-top:none}
+  .total .lab{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;color:var(--ink-3);text-transform:uppercase;
+  }
+  .total .big{
+    display:flex;align-items:baseline;gap:10px;margin-top:5px;
+    font-family:var(--display);font-weight:900;font-variant-numeric:tabular-nums;
+  }
+  .total .big b{font-size:42px;line-height:1;color:var(--cyan-hi);text-shadow:0 0 34px rgba(56,189,248,.45)}
+  .total .big .den{font-size:16px;color:var(--ink-3);font-weight:700}
+  .total .big .dl{
+    margin-left:auto;font-size:13.5px;padding:3px 11px;border-radius:2px;font-weight:900;
+    font-family:var(--mono);
+  }
+  .total .from{
+    font-size:11.5px;color:var(--ink-3);margin-top:8px;font-variant-numeric:tabular-nums;
+    font-family:var(--mono);letter-spacing:.04em;
+  }
+  .split{display:flex;margin-top:15px;border-top:1px solid var(--line-soft);padding-top:13px}
+  .split > div{flex:1;font-variant-numeric:tabular-nums}
+  .split > div + div{border-left:1px solid var(--line-soft);padding-left:16px}
+  .split small{
+    display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;
+    color:var(--ink-3);margin-bottom:3px;text-transform:uppercase;
+  }
+  .split b{font-family:var(--display);font-weight:900;font-size:19px}
+  .split b i{font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:700}
+  .split .f b{color:var(--s3)}
+  .split .m b{color:var(--s1)}
+
+  /* ---- blocks ---- */
+  .blocks{display:grid;gap:10px;margin-bottom:16px}
+  .blk{
+    background:var(--surface);border:1px solid var(--line-soft);border-radius:5px;padding:14px 16px;
+  }
+  .blk.f{box-shadow:inset 2px 0 0 var(--cyan)}
+  .blk.m{box-shadow:inset 2px 0 0 var(--orange)}
+  .blk .top{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+  .blk .top strong{font-family:var(--display);font-size:14px}
+  .blk .top .sc{
+    margin-left:auto;font-family:var(--display);font-weight:900;font-size:16px;
+    font-variant-numeric:tabular-nums;
+  }
+  .blk .top .sc small{font-size:11px;color:var(--ink-3);font-weight:700}
+  .lvl{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;padding:2px 7px;
+    border-radius:2px;border:1px solid;white-space:nowrap;
+  }
+  .lvl.good{background:var(--s3-bg);color:var(--s3);border-color:var(--s3-line)}
+  .lvl.mid{background:var(--s2-bg);color:var(--s2);border-color:var(--s2-line)}
+  .lvl.low{background:var(--s1-bg);color:var(--s1);border-color:var(--s1-line)}
+  .track{height:6px;border-radius:1px;background:var(--void);overflow:hidden;display:flex;border:1px solid var(--line-soft)}
+  .track i{display:block;height:100%}
+  .track i.now{background:var(--cyan)}
+  .track i.gain{background:var(--cyan-hi);opacity:.45}
+  .blk.m .track i.now{background:var(--orange)}
+  .blk.m .track i.gain{background:var(--s1);opacity:.45}
+  .blk .leg{
+    font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-top:8px;
+    font-variant-numeric:tabular-nums;letter-spacing:.04em;
+  }
+  .blk .note{font-size:12.5px;color:var(--ink-2);line-height:1.85;margin-top:10px}
+
+  /* ---- verdict ---- */
+  .verdict{
+    position:relative;background:var(--surface-2);border:1px solid var(--line);
+    border-left:2px solid var(--cyan);border-radius:5px;padding:17px 18px;margin-bottom:14px;
+  }
+  .verdict .lab{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;color:var(--cyan-hi);text-transform:uppercase;
+  }
+  .verdict h3{
+    font-family:var(--display);font-weight:900;font-size:18px;margin:7px 0 10px;
+    line-height:1.45;text-wrap:balance;
+  }
+  .verdict p{margin:0;font-size:13.5px;line-height:1.9;color:var(--ink-2)}
+  .verdict .philo{
+    display:block;margin-top:13px;padding-top:11px;border-top:1px solid var(--line-soft);
+    font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink-3);
+  }
+
+  /* ---- alerts ---- */
+  .alert{border-radius:5px;padding:14px 16px;margin-bottom:10px;border:1px solid}
+  .alert h3{font-family:var(--display);font-size:13.5px;margin:0 0 6px;display:flex;gap:8px;align-items:center}
+  .alert p{margin:0;font-size:12.5px;line-height:1.85;color:var(--ink-2)}
+  .alert.focus{background:var(--s1-bg);border-color:var(--s1-line)}
+  .alert.focus h3{color:var(--s1)}
+  .alert.good{background:var(--s3-bg);border-color:var(--s3-line)}
+  .alert.good h3{color:var(--s3)}
+  .alert.pain{background:var(--s0-bg);border-color:var(--s0-line)}
+  .alert.pain h3{color:var(--s0)}
+
+  /* ---- detail ---- */
+  .grp{background:var(--surface);border:1px solid var(--line-soft);border-radius:5px;padding:14px 16px;margin-bottom:10px}
+  .grp .nm{font-family:var(--display);font-weight:700;font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .grp .nm .diff{
+    margin-left:auto;font-family:var(--mono);font-size:9.5px;padding:2px 7px;border-radius:2px;
+    background:var(--s1-bg);color:var(--s1);border:1px solid var(--s1-line);letter-spacing:.06em;
+  }
+  .sr{display:grid;grid-template-columns:26px 1fr auto;gap:11px;align-items:center;padding:5px 0}
+  .sr .side{font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+  .pips{display:flex;gap:3px}
+  .pips i{flex:1;height:8px;border-radius:1px;background:var(--void);border:1px solid var(--line-soft)}
+  .pips i.prev{border-color:var(--ink-3);border-style:dashed;background:transparent}
+  .sr[data-v="3"] .pips i.on{background:var(--s3);border-color:var(--s3);box-shadow:0 0 8px -1px var(--s3)}
+  .sr[data-v="2"] .pips i.on{background:var(--s2);border-color:var(--s2)}
+  .sr[data-v="1"] .pips i.on{background:var(--s1);border-color:var(--s1);box-shadow:0 0 8px -1px var(--s1)}
+  .sr[data-v="0"] .pips i.on{background:var(--s0);border-color:var(--s0)}
+  .sr .val{
+    font-family:var(--mono);font-size:11px;font-variant-numeric:tabular-nums;
+    white-space:nowrap;color:var(--ink-3);letter-spacing:.02em;
+  }
+  .sr .val b{color:var(--ink);font-size:12.5px}
+  .sr .val .up{color:var(--s3)}
+  .sr .val .dn{color:var(--s0)}
+  .sr.pain .val b{color:var(--s0)}
+  .legend{
+    display:flex;gap:13px;flex-wrap:wrap;font-family:var(--mono);font-size:9.5px;
+    color:var(--ink-3);margin:0 0 14px;letter-spacing:.06em;
+  }
+  .legend span{display:flex;align-items:center;gap:5px}
+  .legend i{width:9px;height:8px;border-radius:1px;display:block}
+
+  /* ---- cta ---- */
+  .cta{
+    margin-top:22px;border:1px solid var(--line);border-radius:6px;overflow:hidden;
+    background:var(--surface);
+  }
+  .cta .hd{
+    padding:16px;background:linear-gradient(160deg,var(--surface-2),var(--surface));
+    border-bottom:1px solid var(--line-soft);
+  }
+  .cta .hd strong{display:block;font-family:var(--display);font-weight:900;font-size:15px;margin-bottom:5px}
+  .cta .hd span{font-size:12.5px;color:var(--ink-3);line-height:1.85}
+  .cta a.lnk{
+    display:flex;align-items:center;gap:12px;padding:13px 16px;text-decoration:none;
+    color:var(--ink);border-bottom:1px solid var(--line-soft);font-size:13.5px;
+  }
+  .cta a.lnk:hover{background:var(--surface-2)}
+  .cta a.lnk .ic{width:20px;text-align:center;flex:none;font-size:14px}
+  .cta a.lnk .tx{line-height:1.5}
+  .cta a.lnk .tx small{display:block;color:var(--ink-3);font-size:11px;line-height:1.65;font-family:var(--mono);letter-spacing:.02em}
+  .cta a.lnk .ar{margin-left:auto;color:var(--ink-3);font-family:var(--mono);font-size:13px}
+  .cta a.lnk.key{background:var(--s3-bg);box-shadow:inset 2px 0 0 var(--cyan)}
+  .cta a.lnk.key .tx small{color:var(--s3)}
+  .cta .ft{padding:15px 16px}
+
+  /* ---- share ---- */
+  .sharebtn{
+    border:1px solid var(--s3-line);background:var(--s3-bg);color:var(--s3);
+    font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    padding:5px 10px;border-radius:2px;
+  }
+  .sharebtn:hover{background:var(--cyan-dim);color:var(--cyan-hi)}
+  .sharepitch{
+    margin-top:14px;border:1px dashed var(--line);border-radius:6px;
+    padding:16px;background:var(--surface);text-align:center;
+  }
+  .sharepitch strong{display:block;font-family:var(--display);font-weight:900;font-size:15px;margin-bottom:5px}
+  .sharepitch span{display:block;font-size:12.5px;color:var(--ink-3);line-height:1.85;margin-bottom:14px}
+
+  .segs{display:flex;gap:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:14px}
+  .segs button{
+    flex:1;border:none;background:var(--surface);color:var(--ink-3);padding:9px 6px;
+    font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    border-right:1px solid var(--line);
+  }
+  .segs button:last-child{border-right:none}
+  .segs button[aria-pressed="true"]{background:var(--s3-bg);color:var(--s3);box-shadow:inset 0 -2px 0 var(--cyan)}
+
+  .toggle{
+    display:flex;align-items:center;gap:11px;padding:12px 14px;margin-bottom:16px;
+    background:var(--surface);border:1px solid var(--line-soft);border-radius:4px;
+    font-size:13px;color:var(--ink-2);width:100%;text-align:left;
+  }
+  .toggle .sw{
+    width:36px;height:20px;border-radius:10px;background:var(--void);
+    border:1px solid var(--line);flex:none;position:relative;transition:background .15s;
+  }
+  .toggle .sw::after{
+    content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:var(--ink-3);transition:transform .15s,background .15s;
+  }
+  .toggle[aria-pressed="true"] .sw{background:var(--cyan-dim);border-color:var(--s3-line)}
+  .toggle[aria-pressed="true"] .sw::after{transform:translateX(16px);background:var(--cyan-hi)}
+  .toggle small{display:block;color:var(--ink-3);font-size:11px;line-height:1.6;margin-top:2px}
+
+  .cardwrap{
+    border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--void);
+    margin-bottom:16px;line-height:0;
+  }
+  .cardwrap canvas{width:100%;height:auto;display:block}
+  .sharenote{
+    font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--ink-3);
+    line-height:1.8;margin-top:14px;
+  }
+
+  /* ---- history ---- */
+  .hist{border:1px solid var(--line-soft);border-radius:5px;overflow:hidden}
+  .hrow{
+    background:var(--surface);padding:13px 15px;display:grid;
+    grid-template-columns:auto 1fr auto;gap:13px;align-items:center;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .hrow:last-child{border-bottom:none}
+  .hrow .d{font-family:var(--mono);font-size:11px;color:var(--ink-3);white-space:nowrap;letter-spacing:.04em}
+  .hbar{height:7px;background:var(--void);border:1px solid var(--line-soft);border-radius:1px;overflow:hidden}
+  .hbar i{display:block;height:100%;background:var(--raise)}
+  .hrow .s{font-family:var(--display);font-weight:900;font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink-2)}
+  .hrow .s small{color:var(--ink-3);font-size:10.5px}
+  .hrow.cur{background:var(--surface-2);box-shadow:inset 2px 0 0 var(--cyan)}
+  .hrow.cur .d{color:var(--cyan-hi)}
+  .hrow.cur .s{color:var(--cyan-hi)}
+  .hrow.cur .hbar i{background:linear-gradient(90deg,var(--cyan),var(--cyan-hi));box-shadow:0 0 12px rgba(56,189,248,.6)}
+
+  .nextdate{
+    margin-top:15px;background:var(--surface);border:1px dashed var(--line);
+    border-radius:5px;padding:14px 16px;font-size:12.5px;color:var(--ink-2);line-height:1.85;
+  }
+  .nextdate b{font-family:var(--display);color:var(--cyan-hi)}
+
+
+  /* ===== LIFF 用の上書き ===== */
+  html,body{height:100%}
+  body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  .stage{padding:0;gap:0;min-height:100dvh}
+  .brandline,.stage-note{display:none}
+  .phone{max-width:560px;border:none;border-radius:0;box-shadow:none;
+         min-height:100dvh;background:var(--navy)}
+  .spin{display:flex;align-items:center;gap:11px;color:var(--ink-3);
+        font-family:var(--mono);font-size:11px;letter-spacing:.1em;padding:40px 18px}
+  .spin i{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--cyan-hi);
+          border-radius:50%;animation:sp .7s linear infinite;display:block}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media(prefers-reduced-motion:reduce){.spin i{animation:none}}
+  .vlink{cursor:pointer}
+  .vlink:hover .play{filter:brightness(1.15)}
+  .hrow{cursor:pointer}
+  .hrow:hover{background:var(--surface-2)}
+
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="phone">
+
+    <div class="screen" id="s-load">
+      <div class="bar"><span class="title">初期テスト</span><span class="right">Endurance Lab</span></div>
+      <div class="spin"><i></i>読み込んでいます</div>
+    </div>
+
+    <div class="screen" id="s-start" hidden>
+      <div class="bar"><span class="title">初期テスト</span><span class="right">Endurance Lab</span></div>
+      <div class="scroll">
+        <p class="eyebrow" id="st-eyebrow">Assessment</p>
+        <h1>8項目を、順番に測ります</h1>
+        <p>1項目ずつ、やり方の動画を見てから採点します。所要 20〜25分。途中でやめても、測ったところまで残ります。</p>
+        <div class="plan">
+          <div class="plan-h f">Block 1 ── 柔軟性 / 5項目</div>
+          <div class="plan-i"><span class="n">1</span>腸腰筋<span class="lr">L / R</span></div>
+          <div class="plan-i"><span class="n">2</span>ふくらはぎ</div>
+          <div class="plan-i"><span class="n">3</span>ハムストリングス</div>
+          <div class="plan-i"><span class="n">4</span>内転筋</div>
+          <div class="plan-i"><span class="n">5</span>臀部<span class="lr">L / R</span></div>
+          <div class="plan-h m">Block 2 ── 動きの質 / 3項目</div>
+          <div class="plan-i"><span class="n">6</span>OHSQ</div>
+          <div class="plan-i"><span class="n">7</span>プッシュアップ</div>
+          <div class="plan-i"><span class="n">8</span>ロータリースタビリティー<span class="lr">L / R</span></div>
+        </div>
+        <p class="muted">用意するもの：棒（モップの柄など）・本1冊・床のライン。痛みが出たら、そこで中止してください。</p>
+        <button class="btn" id="go">測定をはじめる</button>
+        <button class="btn ghost small" id="seeLast" style="margin-top:10px" hidden>前回の結果を見る</button>
+      </div>
+    </div>
+
+    <div class="screen" id="s-item" hidden>
+      <div class="bar">
+        <button class="iconbtn" id="back">←</button>
+        <span class="title" id="i-title"></span>
+        <span class="right" id="i-count"></span>
+      </div>
+      <div class="progress"><i id="i-bar" style="width:12.5%"></i></div>
+      <div class="scroll">
+        <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:9px">
+          <span class="chip" id="i-block"></span><span class="chip gear" id="i-gear"></span>
+        </div>
+        <h2 id="i-sub"></h2>
+        <p class="muted" id="i-why"></p>
+        <div class="video vlink" id="i-video">
+          <div class="play">▶</div><div class="lbl" id="i-vid"></div>
+        </div>
+        <div id="i-scores"></div>
+        <div class="btnrow">
+          <button class="btn ghost small" id="skip">スキップ</button>
+          <button class="btn small" id="next">次へ</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" id="s-result" hidden>
+      <div class="bar">
+        <span class="title">初期テスト 結果</span>
+        <span class="right" id="r-date"></span>
+        <button class="sharebtn" id="toShare">Share</button>
+      </div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true" data-p="sum">サマリー</button>
+        <button class="tab" role="tab" aria-selected="false" data-p="flex">柔軟性</button>
+        <button class="tab" role="tab" aria-selected="false" data-p="move">動きの質</button>
+        <button class="tab" role="tab" aria-selected="false" data-p="hist">履歴</button>
+      </div>
+      <div class="scroll">
+        <div class="pane" id="p-sum">
+          <div class="total">
+            <span class="lab">Total</span>
+            <div class="big"><b id="r-tot">0</b><span class="den">/ 33</span><span class="dl" id="r-delta"></span></div>
+            <div class="from" id="r-from"></div>
+            <div class="split" id="r-split"></div>
+          </div>
+          <div class="blocks" id="r-blocks"></div>
+          <div id="r-verdict"></div>
+          <div id="r-alerts"></div>
+          <div id="r-cta"></div>
+          <div class="sharepitch">
+            <strong>伸びたところを、見せる</strong>
+            <span>変化を1枚の画像にします。<br>SNSにも、Discordにも。</span>
+            <button class="btn small" id="toShare2">シェア用の画像をつくる</button>
+          </div>
+        </div>
+        <div class="pane" id="p-flex" hidden></div>
+        <div class="pane" id="p-move" hidden></div>
+        <div class="pane" id="p-hist" hidden>
+          <div class="hist" id="histList"></div>
+          <div class="nextdate" id="nextDate"></div>
+          <p class="muted" style="margin-top:15px">日付をタップすると、その回との比較に切り替わります。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" id="s-share" hidden>
+      <div class="bar">
+        <button class="iconbtn" id="shareBack">←</button>
+        <span class="title">シェア用の画像</span>
+        <span class="right">Share Card</span>
+      </div>
+      <div class="scroll">
+        <div class="segs" id="fmtSeg">
+          <button data-f="story" aria-pressed="true">ストーリーズ 9:16</button>
+          <button data-f="feed" aria-pressed="false">フィード 4:5</button>
+        </div>
+        <button class="toggle" id="privToggle" aria-pressed="false">
+          <span class="sw"></span>
+          <span>点数を隠す<small>変化と総括だけを載せます。素点を出したくないときに。</small></span>
+        </button>
+        <div class="cardwrap"><canvas id="card"></canvas></div>
+        <div class="btnrow" style="margin-top:0">
+          <button class="btn ghost small" id="shareLine">LINEで送る</button>
+          <button class="btn small" id="saveImg">画像を保存</button>
+        </div>
+        <p class="sharenote" id="shareNote">長押しで保存もできます。</p>
+      </div>
+    </div>
+
+    <div class="screen" id="s-err" hidden>
+      <div class="bar"><span class="title">初期テスト</span></div>
+      <div class="scroll">
+        <div class="callout" style="background:var(--s0-bg);border-color:var(--s0-line)">
+          <h4 style="color:var(--s0)">読み込めませんでした</h4>
+          <p>電波の良いところで、もう一度メニューから開いてみてください。</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="../config.js"></script>
+<script>
+
+/* ==========================================================
+   Endurance Lab ── 初期テスト（LIFF）
+   ========================================================== */
+const $ = (s) => document.querySelector(s);
+const pad = (n) => String(n).padStart(2, '0');
+
+/* 項目ごとの説明文と採点基準。キーとラベルと動画URLはDBから来る。 */
+const COPY = {
+  iliopsoas:{ sub:'股関節の前面', gear:'台（ベッド端など）',
+    why:'登りで脚を引き上げ、地面を後ろに送り切るための可動域。硬いと骨盤が前に傾き、腰まわりの負担が増えます。',
+    c:['反対脚の膝が浮かない','反対脚の膝が浮くが、軽く押すと床に付く','反対脚の膝がこぶし一つ分以上浮く','痛みがある（中止）'] },
+  calf:{ sub:'足首の背屈', gear:'道具なし',
+    why:'下りの着地で衝撃を受け止め、次の一歩へ返すための土台。8項目のなかで、トレイルに最も直接的に効きます。',
+    c:['手を使う前に、余裕でしゃがめる','ギリギリしゃがめる','しゃがむとかかとが浮いてしまう','痛みがある（中止）'] },
+  hamstring:{ sub:'もも裏', gear:'道具なし',
+    why:'登りでの前傾姿勢の取りやすさに関わります。点数が低くても「危険」ではなく、鍛え方まで設計する項目です。',
+    c:['手のひらが床につく','指先が床につく','指先が床に届かない','痛みがある（中止）'] },
+  adductor:{ sub:'内もも', gear:'道具なし',
+    why:'不整地で足場を選ぶときのスタンスの広さ、横方向への踏ん張りに関わります。',
+    c:['姿勢が取れ、膝がこぶし1つ分より低い','姿勢は取れるが、膝がこぶし1つ分より高い','硬くて指定の姿勢が取れない','痛みがある（中止）'] },
+  glute:{ sub:'お尻・股関節の後面', gear:'道具なし',
+    why:'骨盤の回旋を生む土台。硬いと上体だけで代償し、腕振りと呼吸が浅くなります。',
+    c:['膝に胸がつき、くるぶしにも触れる','膝に胸はつくが、くるぶしに届かない','膝に胸が届かない','痛みがある（中止）'] },
+  ohsq:{ sub:'オーバーヘッドスクワット', gear:'棒・本1冊',
+    why:'足首・膝・股関節・胸椎・肩を一度に見る全身のふるい。深く沈めない、腕が前に落ちる、がそのまま点数に出ます。',
+    c:['棒を頭上に保ったまま、太ももが床と平行より深くしゃがめる','かかとの下に本を挟めば、上記ができる','本を挟んでもできない','痛みがある（中止）'] },
+  pushup:{ sub:'体幹の前後の安定性', gear:'道具なし',
+    why:'回数ではなく、体を一枚の板のまま持ち上げられるかを見ます。腰が先に反るなら、体幹が力の通り道になっていません。',
+    c:['男性は親指が額、女性は親指が顎の高さで、体が一枚のまま上がる','手を下げれば（男性は顎、女性は鎖骨）一枚のまま上がる','手を下げても、腰が反る・お尻が遅れて上がる','痛みがある（中止）'] },
+  rotary:{ sub:'対角の安定性', gear:'床のライン',
+    why:'片脚支持で骨盤がぶれるかを、走らずに確かめられる項目。左右差がいちばん出やすいところです。',
+    c:['同じ側の手と脚を伸ばして戻す動作が、体がぶれずにできる','対角（右手と左脚）ならできる','対角でも、体がぶれる・倒れる','痛みがある（中止）'] },
+};
+const GROUP_LABEL = { iliopsoas:'腸腰筋', calf:'ふくらはぎ', hamstring:'ハムストリングス',
+  adductor:'内転筋', glute:'臀部', ohsq:'OHSQ', pushup:'プッシュアップ',
+  rotary:'ロータリースタビリティー' };
+
+let ITEMS = [];                 // {key(group), block, label, sub, why, gear, sides[], c[], video}
+let RAW   = [];                 // DBの test_items そのまま
+let now = {}, PREV = {}, PREV_ON = null, CUR_ON = null, HISTORY = [];
+let idx = 0, idToken = null, LAST_RES = null;
+
+const cellKey = (it, s) => s ? it.key + '_' + s : it.key;
+const cells = () => ITEMS.flatMap(it => it.sides.map(s => ({ it, s, k: cellKey(it, s) })));
+const jstToday = () => new Date(Date.now() + 9*3600000).toISOString().slice(0,10);
+
+function gapText(){
+  if (!PREV_ON) return '';
+  const d = Math.round((new Date(CUR_ON) - new Date(PREV_ON)) / 86400000);
+  if (d >= 60) return Math.round(d/30) + 'ヶ月ぶり';
+  if (d >= 21) return Math.round(d/7) + '週間ぶり';
+  return d + '日ぶり';
+}
+
+const SCREENS = ['s-load','s-start','s-item','s-result','s-share','s-err'];
+function show(id){
+  SCREENS.forEach(x => { const el = $('#'+x); if (el) el.hidden = (x !== id); });
+  document.querySelectorAll('.scroll').forEach(el => el.scrollTop = 0);
+}
+
+/* ---------- API ---------- */
+async function api(action, extra = {}){
+  const r = await fetch(ENLAB.API, {
+    method:'POST',
+    headers:{
+      'content-type':'application/json',
+      'apikey': ENLAB.ANON,
+      'authorization': 'Bearer ' + ENLAB.ANON,
+    },
+    body: JSON.stringify({ action, idToken, ...extra }),
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+/* ---------- 項目マスタ → ITEMS ---------- */
+function buildItems(rows){
+  RAW = rows;
+  const byGroup = new Map();
+  rows.forEach(r => {
+    if (!byGroup.has(r.item_group)) byGroup.set(r.item_group, []);
+    byGroup.get(r.item_group).push(r);
+  });
+  ITEMS = [...byGroup.entries()].map(([grp, rs]) => {
+    rs.sort((a,b) => a.sort_order - b.sort_order);
+    const cp = COPY[grp] || { sub:'', why:'', gear:'', c:['','','',''] };
+    return {
+      key: grp, block: rs[0].block, label: GROUP_LABEL[grp] || rs[0].label,
+      sub: cp.sub, why: cp.why, gear: cp.gear, c: cp.c,
+      sides: rs.map(r => r.side), video: rs[0].video_url || '',
+      keyOf: Object.fromEntries(rs.map(r => [r.side || '_', r.item_key])),
+      order: rs[0].sort_order,
+    };
+  }).sort((a,b) => a.order - b.order);
+}
+/* DBのitem_keyへ変換（左右あり: group_R / なし: group） */
+function dbKey(it, side){ return it.keyOf[side || '_']; }
+
+/* ---------- 測定画面 ---------- */
+function renderItem(){
+  const it = ITEMS[idx];
+  $('#i-title').textContent = it.label;
+  $('#i-sub').textContent   = it.sub;
+  $('#i-why').textContent   = it.why;
+  $('#i-gear').textContent  = it.gear;
+  $('#i-count').textContent = pad(idx+1) + ' / ' + pad(ITEMS.length);
+  $('#i-bar').style.width   = ((idx+1)/ITEMS.length*100) + '%';
+  $('#i-vid').textContent   = it.video ? 'やり方を見る ／ ' + it.label : '動画は準備中です';
+  const b = $('#i-block');
+  b.textContent = it.block === 'flex' ? '柔軟性' : '動きの質';
+  b.className = 'chip ' + it.block;
+  $('#i-video').onclick = () => {
+    if (!it.video) return;
+    liff.openWindow({ url: it.video, external: false });
+  };
+
+  const host = $('#i-scores'); host.innerHTML = '';
+  it.sides.forEach(s => {
+    const k = cellKey(it, s);
+    if (s){
+      const h = document.createElement('div');
+      h.className = 'sidelbl';
+      h.textContent = s === 'R' ? 'Right ／ 右' : 'Left ／ 左';
+      host.appendChild(h);
+    }
+    const wrap = document.createElement('div'); wrap.className = 'opts';
+    [3,2,1,0].forEach((v,i) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt'; btn.dataset.v = v;
+      btn.setAttribute('aria-pressed', now[k] === v ? 'true' : 'false');
+      btn.innerHTML = '<span class="n">'+v+'</span><span>'+it.c[i]+'</span>';
+      btn.onclick = () => {
+        now[k] = v;
+        [...wrap.children].forEach(c => c.setAttribute('aria-pressed','false'));
+        btn.setAttribute('aria-pressed','true');
+      };
+      wrap.appendChild(btn);
+    });
+    host.appendChild(wrap);
+  });
+}
+
+async function finish(){
+  const values = {};
+  cells().forEach(c => {
+    const v = now[c.k];
+    if (v !== undefined && v !== null) values[dbKey(c.it, c.s)] = v;
+  });
+  $('#next').disabled = true;
+  try {
+    const res = await api('test.put', { values });
+    applyServer(res);
+    buildResult();
+    renderHistory();
+    show('s-result');
+  } catch(e){ console.error(e); show('s-err'); }
+  finally { $('#next').disabled = false; }
+}
+
+function advance(){
+  if (idx < ITEMS.length - 1){ idx++; renderItem(); $('#s-item .scroll').scrollTop = 0; }
+  else finish();
+}
+
+/* サーバの戻り（current/previous/history）をローカル状態へ */
+function applyServer(res){
+  HISTORY = res.history || [];
+  const toLocal = (vals) => {
+    const o = {};
+    if (!vals) return o;
+    ITEMS.forEach(it => it.sides.forEach(s => {
+      const dk = dbKey(it, s);
+      if (vals[dk] !== undefined) o[cellKey(it, s)] = vals[dk];
+    }));
+    return o;
+  };
+  now     = toLocal(res.current?.values);
+  PREV    = toLocal(res.previous?.values);
+  CUR_ON  = res.current?.testedOn  || jstToday();
+  PREV_ON = res.previous?.testedOn || null;
+  $('#r-date').textContent = CUR_ON.replace(/-/g,'.');
+}
+
+function renderHistory(){
+  const max = 33;
+  $('#histList').innerHTML = HISTORY.map((h,i) =>
+    '<div class="hrow'+(h.tested_on===CUR_ON?' cur':'')+'" data-id="'+h.assessment_id+'">'+
+      '<span class="d">'+h.tested_on.replace(/-/g,'.')+'</span>'+
+      '<span class="hbar"><i style="width:'+(h.total_max? h.total_got/h.total_max*100 : 0)+'%"></i></span>'+
+      '<span class="s">'+h.total_got+'<small> /'+(h.total_max||max)+'</small></span>'+
+    '</div>').join('') || '<div class="hrow"><span class="d">まだ記録がありません</span></div>';
+
+  document.querySelectorAll('#histList .hrow[data-id]').forEach(el => {
+    el.onclick = async () => {
+      try {
+        const res = await api('test.get', { assessmentId: Number(el.dataset.id) });
+        applyServer(res); buildResult(); renderHistory();
+        document.querySelector('.tab[data-p="sum"]').click();
+      } catch(e){ console.error(e); }
+    };
+  });
+
+  const next = new Date(CUR_ON); next.setMonth(next.getMonth() + 3);
+  $('#nextDate').innerHTML = '次の測定の目安は <b>' +
+    next.toISOString().slice(0,10).replace(/-/g,'.') +
+    '</b>（3ヶ月後）。2〜3ヶ月あけないと、点数が動くほどの変化は出ません。';
+}
+
+/* ---------- ナビゲーション ---------- */
+$('#go').onclick    = () => { now = {}; idx = 0; renderItem(); show('s-item'); };
+$('#next').onclick  = advance;
+$('#skip').onclick  = () => {
+  ITEMS[idx].sides.forEach(s => delete now[cellKey(ITEMS[idx], s)]);
+  advance();
+};
+$('#back').onclick  = () => { if (idx === 0) show('s-start'); else { idx--; renderItem(); } };
+$('#seeLast').onclick = () => { if (LAST_RES){ applyServer(LAST_RES); buildResult(); renderHistory(); show('s-result'); } };
+
+/* ---------- 起動 ---------- */
+(async () => {
+  try {
+    await liff.init({ liffId: ENLAB.LIFF_ID_ASSESSMENT });
+    if (!liff.isLoggedIn()){ liff.login(); return; }
+    idToken = liff.getIDToken();
+    const [items, res] = await Promise.all([ api('test.items'), api('test.get') ]);
+    buildItems(items);
+    if (res.current){
+      LAST_RES = res;
+      applyServer(res);
+      $('#st-eyebrow').textContent = 'Assessment ／ 前回 ' + CUR_ON.replace(/-/g,'.');
+      $('#seeLast').hidden = false;
+      const saved = now; now = {};      // 新規測定は空から
+      PREV = saved; PREV_ON = CUR_ON; CUR_ON = jstToday();
+    } else {
+      $('#st-eyebrow').textContent = 'Assessment ／ 初回';
+      CUR_ON = jstToday();
+    }
+    show('s-start');
+  } catch(e){
+    console.error(e);
+    show('s-err');
+  }
+})();
+
+
+/* ---------- levels / copy ---------- */
+const LEVELS = { good:'良好', mid:'あと一歩', low:'要改善' };
+const RANK = { low:0, mid:1, good:2 };
+function lvl(n){
+  if (!n.max) return 'mid';
+  const p = n.got / n.max;
+  return p >= 0.85 ? 'good' : (p >= 0.67 ? 'mid' : 'low');
+}
+
+const BLOCK_NOTE = {
+  flex:{
+    good:'可動域は十分にあります。硬さが原因で動けない、という段階は抜けました。',
+    mid:'大きな制限はありませんが、伸びしろが残っています。硬い項目を1つ選んで、次の測定まで集中してください。',
+    low:'複数の項目で可動域が足りていません。ここが土台なので、トレーニングより先にケアの時間を取ってください。'
+  },
+  move:{
+    good:'可動域を、動きの中で使えています。支える力は足りています。',
+    mid:'支える力はありますが、崩れる場面があります。体幹と股関節のトレーニングを週2回入れてください。',
+    low:'可動域を、動きの中で使えていません。ここが弱いまま走る量を増やすと、ケガに近づきます。'
+  }
+};
+
+const VERDICT = {
+  low_low:  ['まずは、整えるところから','硬さも、支える力も足りていません。両方いっぺんに追わないでください。最初の1〜2ヶ月はケアに寄せて、整ってからトレーニングに移るほうが、結果的に速く進みます。'],
+  low_mid:  ['硬さが、いちばんの伸びしろ','動きのほうは支えられています。いま制限しているのは可動域です。次の測定までケア中心でいけば、動きの点数も一緒に上がる可能性が高い。'],
+  low_good: ['硬さだけが、残っています','支える力は十分にあります。あとは硬さを削るだけ。ストレッチとフォームローラーに時間を寄せてください。'],
+  mid_low:  ['動く体はある。使えていない','可動域は足りているのに、動きの中で使えていません。ストレッチを足しても変わらない段階です。トレーニングに切り替えてください。'],
+  mid_mid:  ['両方、あと一歩','どちらにも大きな穴はありませんが、伸びしろが残っています。1点・2点の項目から2つだけ選んで、次の測定までに潰す。全部やろうとしないでください。'],
+  mid_good: ['支える力は十分。硬さを削る','動きは安定しています。残っている硬さを取れば、同じ動きがもっと楽になります。'],
+  good_low: ['動く体はある。使えていない','可動域は十分です。足りないのは、それを支える力のほう。ケアよりトレーニングの比重を上げてください。'],
+  good_mid: ['可動域は十分。あとは支える力','硬さは、もう課題ではありません。体幹と股関節のトレーニングに時間を寄せてください。'],
+  good_good:['土台は、できています','柔軟性も支える力も水準に届いています。ここからは負荷設計 ── 走る量と強度の組み立てに進んでください。']
+};
+
+const LINKS = {
+  care: { ic:'🧘', t:'ケア動画',                     s:'FOAM ROLLER ／ 12分ストレッチルーティン' },
+  train:{ ic:'🏋', t:'トレーニング動画（解説付き）', s:'体幹 ／ 股関節 ／ 下りの筋トレ' },
+  read: { ic:'📄', t:'解説記事',                     s:'測った項目が、なぜ効くのか' },
+  load: { ic:'📊', t:'スライド資料',                 s:'トレーニング負荷設計 ／ Zone 2' }
+};
+
+
+function ctaHTML(fl, ml){
+  let order;
+  if (fl === 'good' && ml === 'good') order = ['load','train','read'];
+  else if (RANK[fl] <= RANK[ml])      order = ['care','train','read'];
+  else                                order = ['train','care','read'];
+  const URLS = { care: ENLAB.MEMBER.care, train: ENLAB.MEMBER.train,
+                 read: ENLAB.MEMBER.read, load: ENLAB.MEMBER.read };
+  const rows = order.map((k,i) => {
+    const L = LINKS[k]; const u = URLS[k] || ENLAB.MEMBER.top;
+    return '<a class="lnk'+(i===0?' key':'')+'" href="#" data-u="'+u+'"><span class="ic">'+L.ic+'</span>'+
+      '<span class="tx">'+L.t+'<small>'+L.s+'</small></span><span class="ar">›</span></a>';
+  }).join('');
+  return '<div class="cta"><div class="hd"><strong>測っただけでは、変わりません</strong>'+
+    '<span>点数を見たら、メンバーサイトで解説と実践動画を見て、今日の1本を決めてください。</span></div>'+
+    rows + '<div class="ft"><button class="btn small" data-u="'+ENLAB.MEMBER.top+'">メンバーサイトを開く</button></div></div>';
+}
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-u]');
+  if (!t) return;
+  e.preventDefault();
+  const u = t.dataset.u;
+  if (u) liff.openWindow({ url: u, external: false });
+});
+
+/* ---------- result ---------- */
+const scored = v => v !== undefined && v !== null && v > 0;
+
+function blockScore(block, src){
+  let got = 0, max = 0;
+  cells().filter(c => c.it.block === block).forEach(c => {
+    const v = src[c.k];
+    if (scored(v)){ got += v; max += 3; }
+  });
+  return { got, max };
+}
+
+function buildResult(){
+  const fN = blockScore('flex', now), mN = blockScore('move', now);
+  const fP = blockScore('flex', PREV), mP = blockScore('move', PREV);
+  const tot = fN.got + mN.got, max = fN.max + mN.max;
+  const prevTot = fP.got + mP.got;
+
+  $('#r-tot').textContent = tot;
+  $('#r-tot').nextElementSibling.textContent = '/ ' + max;
+  const d = tot - prevTot;
+  const dl = $('#r-delta');
+  dl.textContent = (d > 0 ? '+' : '') + d;
+  const up = d >= 0;
+  dl.style.background = up ? 'var(--s3-bg)' : 'var(--s0-bg)';
+  dl.style.color      = up ? 'var(--s3)'    : 'var(--s0)';
+  dl.style.border     = '1px solid ' + (up ? 'var(--s3-line)' : 'var(--s0-line)');
+  $('#r-from').textContent = PREV_ON ? ('PREV ' + PREV_ON.replace(/-/g,'.') + ' 　' + prevTot + ' / ' + (fP.max + mP.max)) : '前回の記録はありません';
+
+  $('#r-split').innerHTML =
+    '<div class="f"><small>柔軟性</small><b>'+fN.got+'<i> / '+fN.max+'</i></b></div>'+
+    '<div class="m"><small>動きの質</small><b>'+mN.got+'<i> / '+mN.max+'</i></b></div>';
+
+  $('#r-blocks').innerHTML =
+    blk('柔軟性', 'タイトネステスト 5項目', fN, fP, 'flex') +
+    blk('動きの質', 'FMS 3項目', mN, mP, 'move');
+
+  const fl = lvl(fN), ml = lvl(mN), V = VERDICT[fl+'_'+ml];
+  $('#r-verdict').innerHTML =
+    '<div class="verdict"><span class="lab">Verdict ／ 総括</span><h3>'+V[0]+'</h3><p>'+V[1]+'</p>'+
+    '<span class="philo">整えてから、積む。</span></div>';
+
+  let a = '';
+  const pain = cells().filter(c => now[c.k] === 0);
+  const weak = cells().filter(c => now[c.k] === 1);
+  const gaps = ITEMS.filter(it => it.sides.length === 2).map(it => {
+    const r = now[it.key+'_R'], l = now[it.key+'_L'];
+    return (scored(r) && scored(l) && Math.abs(r-l) >= 1) ? it.label + '（' + Math.abs(r-l) + '点差）' : null;
+  }).filter(Boolean);
+
+  if (pain.length) a += alert_('pain','●','痛みが出た項目があります',
+    nameList(pain) + '。無理に測り直さず、Discordから相談してください。合計点からは除いてあります。');
+  if (weak.length) a += alert_('focus','◎','最初に取り組む場所',
+    nameList(weak) + '。点数の高い項目より、まずここから手をつけます。');
+  else a += alert_('good','✓','1点の項目はありません',
+    '前回あった弱点は解消しました。次は左右差と、2点で止まっている項目へ。');
+  if (gaps.length) a += alert_('focus','⇄','左右差 1点以上', gaps.join('、') + '。左右差は放置せず、硬い側を丁寧に。');
+  else a += alert_('good','⇄','左右差なし','左右の点数が揃っています。');
+  $('#r-alerts').innerHTML = a;
+
+  const C = ctaHTML(fl, ml);
+  $('#r-cta').innerHTML = C;
+  $('#p-flex').innerHTML = legend() + ITEMS.filter(i => i.block === 'flex').map(grp).join('') + C;
+  $('#p-move').innerHTML = legend() + ITEMS.filter(i => i.block === 'move').map(grp).join('') + C;
+}
+
+function nameList(cs){
+  return cs.map(c => c.it.label + (c.s ? '（' + (c.s === 'R' ? '右' : '左') + '）' : '')).join('、');
+}
+function alert_(cls, icon, h, p){
+  return '<div class="alert '+cls+'"><h3><span>'+icon+'</span>'+h+'</h3><p>'+p+'</p></div>';
+}
+
+function blk(name, sub, n, p, id){
+  const pct = n.max ? n.got / n.max * 100 : 0;
+  const base = n.max ? Math.min(p.got, n.got) / n.max * 100 : 0;
+  const d = n.got - p.got;
+  const L = lvl(n);
+  return '<div class="blk '+(id === 'flex' ? 'f' : 'm')+'"><div class="top"><strong>'+name+'</strong>'+
+    '<span class="lvl '+L+'">'+LEVELS[L]+'</span>'+
+    '<span class="sc">'+n.got+'<small> / '+n.max+'</small></span></div>'+
+    '<div class="track"><i class="now" style="width:'+base+'%"></i><i class="gain" style="width:'+(pct-base)+'%"></i></div>'+
+    '<div class="leg">'+sub+'　／　PREV '+p.got+' / '+p.max+'　'+(d>0?'▲ +'+d:(d<0?'▼ '+d:'±0'))+'</div>'+
+    '<div class="note">'+BLOCK_NOTE[id][L]+'</div></div>';
+}
+
+function legend(){
+  return '<div class="legend">'+
+    '<span><i style="background:var(--s3)"></i>3 クリア</span>'+
+    '<span><i style="background:var(--s2)"></i>2 あと一歩</span>'+
+    '<span><i style="background:var(--s1)"></i>1 制限あり</span>'+
+    '<span><i style="background:var(--s0)"></i>0 痛み</span></div>';
+}
+
+function grp(it){
+  const rows = it.sides.map(s => {
+    const k = cellKey(it, s);
+    return row(s, now[k], PREV[k]);
+  }).join('');
+  let diff = '';
+  if (it.sides.length === 2){
+    const r = now[it.key+'_R'], l = now[it.key+'_L'];
+    if (scored(r) && scored(l) && Math.abs(r-l) >= 1) diff = '<span class="diff">左右差 '+Math.abs(r-l)+'</span>';
+  }
+  return '<div class="grp"><div class="nm">'+it.label+diff+'</div>'+rows+'</div>';
+}
+
+function row(side, v, p){
+  const lbl = side ? (side === 'R' ? 'R' : 'L') : '　';
+  if (v === null || v === undefined)
+    return '<div class="sr"><span class="side">'+lbl+'</span>'+
+      '<span class="pips"><i></i><i></i><i></i></span>'+
+      '<span class="val">未測定</span></div>';
+  const pips = [1,2,3].map(n => '<i class="'+(n <= v ? 'on' : (n <= p ? 'prev' : ''))+'"></i>').join('');
+  let mark = '　±0';
+  if (v > 0 && p > 0){
+    const d = v - p;
+    if (d > 0) mark = '<span class="up">▲ +'+d+'</span>';
+    else if (d < 0) mark = '<span class="dn">▼ '+d+'</span>';
+  } else if (v === 0) mark = '<span class="dn">痛み</span>';
+  return '<div class="sr'+(v===0?' pain':'')+'" data-v="'+v+'"><span class="side">'+lbl+'</span>'+
+    '<span class="pips">'+pips+'</span>'+
+    '<span class="val">'+p+' → <b>'+v+'</b>　'+mark+'</span></div>';
+}
+
+/* ==========================================================
+   Share card ── Canvas renderer
+   ========================================================== */
+let fmt = 'story', priv = false;
+const cv = $('#card'), cx = cv.getContext('2d');
+
+const C = {
+  void:'#04080F', navy:'#0B1220', ink:'#EAF2FB', ink2:'#A9BDD4', ink3:'#6E85A2',
+  cyan:'#0EA5E9', cyanHi:'#38BDF8', orange:'#F26E20', line:'#223B5C'
+};
+
+function spaced(g, text, x, y, tr){
+  let cur = x;
+  for (const ch of text){ g.fillText(ch, cur, y); cur += g.measureText(ch).width + tr; }
+  return cur - x - tr;
+}
+function wrap(g, text, maxW){
+  const out = []; let line = '';
+  for (const ch of text){
+    if (g.measureText(line + ch).width > maxW && line){ out.push(line); line = ch; }
+    else line += ch;
+  }
+  if (line) out.push(line);
+  return out;
+}
+
+function shareData(){
+  const fN = blockScore('flex', now), mN = blockScore('move', now);
+  const fP = blockScore('flex', PREV), mP = blockScore('move', PREV);
+  const tot = fN.got + mN.got, max = fN.max + mN.max, prevTot = fP.got + mP.got;
+  const V = VERDICT[lvl(fN) + '_' + lvl(mN)];
+  const gained = cells().map(c => {
+    const v = now[c.k], p = PREV[c.k];
+    if (!scored(v) || !scored(p) || v <= p) return null;
+    return { name: c.it.label + (c.s ? '（' + (c.s === 'R' ? '右' : '左') + '）' : ''), p, v };
+  }).filter(Boolean);
+  return { fN, mN, fP, mP, tot, max, prevTot, d: tot - prevTot, V, gained };
+}
+
+function drawCard(){
+  const D = shareData();
+  const W = 1080, H = fmt === 'story' ? 1920 : 1350;
+  const M = 96, IW = W - M * 2;
+  cv.width = W; cv.height = H;
+  const g = cx;
+
+  /* ground */
+  g.fillStyle = C.navy; g.fillRect(0, 0, W, H);
+  const rg = g.createRadialGradient(W/2, H*0.10, 0, W/2, H*0.10, W);
+  rg.addColorStop(0, 'rgba(14,165,233,0.22)'); rg.addColorStop(1, 'rgba(14,165,233,0)');
+  g.fillStyle = rg; g.fillRect(0, 0, W, H);
+  g.strokeStyle = 'rgba(56,189,248,0.055)'; g.lineWidth = 1;
+  for (let x = 0; x <= W; x += 60){ g.beginPath(); g.moveTo(x+.5, 0); g.lineTo(x+.5, H); g.stroke(); }
+  for (let y = 0; y <= H; y += 60){ g.beginPath(); g.moveTo(0, y+.5); g.lineTo(W, y+.5); g.stroke(); }
+
+  /* corner ticks */
+  g.strokeStyle = 'rgba(56,189,248,0.45)'; g.lineWidth = 3;
+  const t = 44, o = 44;
+  [[o,o,1,1],[W-o,o,-1,1],[o,H-o,1,-1],[W-o,H-o,-1,-1]].forEach(([x,y,sx,sy]) => {
+    g.beginPath(); g.moveTo(x + sx*t, y); g.lineTo(x, y); g.lineTo(x, y + sy*t); g.stroke();
+  });
+
+  const story = fmt === 'story';
+  const K = story ? 1 : 0.80;              // vertical compression for feed
+  const Y = (v) => Math.round(story ? v : 150 + (v - 150) * K);
+
+  g.textBaseline = 'alphabetic';
+
+  /* masthead */
+  g.fillStyle = C.cyanHi; g.font = '500 24px "IBM Plex Mono", monospace';
+  const mw = spaced(g, 'ENDURANCE LAB', M, Y(178), 9);
+  g.strokeStyle = 'rgba(56,189,248,0.25)'; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(M + mw + 26, Y(171)); g.lineTo(W - M, Y(171)); g.stroke();
+
+  g.fillStyle = C.ink; g.font = '900 48px "Zen Kaku Gothic New", sans-serif';
+  g.fillText('初期テスト', M, Y(290));
+  g.fillStyle = C.ink3; g.font = '400 26px "IBM Plex Mono", monospace';
+  g.fillText(CUR_ON.replace(/-/g,'.') + (PREV_ON ? '  ／  ' + gapText() : ''), M, Y(340));
+
+  /* hero ── the change */
+  g.fillStyle = C.ink3; g.font = '400 24px "IBM Plex Mono", monospace';
+  spaced(g, PREV_ON ? '前回からの変化' : '今回のスコア', M, Y(470), 3);
+
+  const big = story ? 190 : 165;
+  g.save();
+  g.shadowColor = 'rgba(56,189,248,0.55)'; g.shadowBlur = 60;
+  g.fillStyle = C.cyanHi;
+  g.font = '900 ' + big + 'px "Zen Kaku Gothic New", sans-serif';
+  const dTxt = (D.d >= 0 ? '+' : '') + D.d;
+  g.fillText(dTxt, M, Y(640));
+  g.restore();
+  const dW = g.measureText(dTxt).width;
+
+  if (!priv){
+    g.fillStyle = C.ink2; g.font = '400 44px "IBM Plex Mono", monospace';
+    g.fillText(D.prevTot + ' → ' + D.tot, M + dW + 40, Y(618));
+    g.fillStyle = C.ink3; g.font = '400 28px "IBM Plex Mono", monospace';
+    g.fillText('/ ' + D.max, M + dW + 40, Y(662));
+  } else {
+    g.fillStyle = C.ink2; g.font = '700 38px "Zen Kaku Gothic New", sans-serif';
+    g.fillText('点、伸びました', M + dW + 34, Y(624));
+  }
+
+  /* blocks */
+  let by = Y(790);
+  [['柔軟性', D.fN, D.fP, C.cyan], ['動きの質', D.mN, D.mP, C.orange]].forEach(([nm, n, pv, col]) => {
+    g.fillStyle = C.ink; g.font = '700 32px "Zen Kaku Gothic New", sans-serif';
+    g.fillText(nm, M, by);
+    if (!priv){
+      g.fillStyle = col; g.font = '900 34px "Zen Kaku Gothic New", sans-serif';
+      const sc = n.got + '';
+      const den = ' / ' + n.max;
+      g.font = '400 26px "IBM Plex Mono", monospace';
+      const dw2 = g.measureText(den).width;
+      g.font = '900 34px "Zen Kaku Gothic New", sans-serif';
+      const sw = g.measureText(sc).width;
+      g.fillText(sc, W - M - dw2 - sw, by);
+      g.fillStyle = C.ink3; g.font = '400 26px "IBM Plex Mono", monospace';
+      g.fillText(den, W - M - dw2, by);
+    }
+    const barY = by + 22, barH = 14;
+    g.fillStyle = 'rgba(4,8,15,0.85)'; g.fillRect(M, barY, IW, barH);
+    g.strokeStyle = C.line; g.lineWidth = 1; g.strokeRect(M+.5, barY+.5, IW-1, barH-1);
+    const base = n.max ? Math.min(pv.got, n.got) / n.max * IW : 0;
+    const full = n.max ? n.got / n.max * IW : 0;
+    g.fillStyle = col; g.fillRect(M, barY, base, barH);
+    g.globalAlpha = 0.5; g.fillRect(M + base, barY, full - base, barH); g.globalAlpha = 1;
+    by += story ? 130 : 112;
+  });
+
+  /* verdict */
+  const vy = Y(1120);
+  g.fillStyle = C.cyanHi; g.font = '500 22px "IBM Plex Mono", monospace';
+  spaced(g, 'VERDICT', M, vy, 8);
+  g.fillStyle = C.cyan; g.fillRect(M, vy + 26, 3, story ? 130 : 118);
+  g.fillStyle = C.ink; g.font = '900 ' + (story ? 54 : 48) + 'px "Zen Kaku Gothic New", sans-serif';
+  wrap(g, D.V[0], IW - 34).slice(0, 2).forEach((ln, i) => {
+    g.fillText(ln, M + 30, vy + 84 + i * (story ? 66 : 58));
+  });
+
+  /* gained items */
+  let gy = Y(1370);
+  g.fillStyle = C.ink3; g.font = '400 22px "IBM Plex Mono", monospace';
+  spaced(g, D.gained.length ? '▲ 伸びた項目' : '── 維持', M, gy, 3);
+  gy += 46;
+  g.font = '500 30px "Zen Kaku Gothic New", sans-serif';
+  D.gained.slice(0, story ? 5 : 3).forEach(it => {
+    g.fillStyle = C.ink2; g.fillText(it.name, M, gy);
+    if (!priv){
+      g.fillStyle = C.cyanHi; g.font = '400 26px "IBM Plex Mono", monospace';
+      const tx = it.p + ' → ' + it.v;
+      g.fillText(tx, W - M - g.measureText(tx).width, gy);
+      g.font = '500 30px "Zen Kaku Gothic New", sans-serif';
+    }
+    gy += 48;
+  });
+
+  /* footer */
+  const fy = H - 150;
+  g.strokeStyle = 'rgba(56,189,248,0.25)'; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(M, fy - 56); g.lineTo(W - M, fy - 56); g.stroke();
+  g.fillStyle = C.ink; g.font = '900 34px "Zen Kaku Gothic New", sans-serif';
+  g.fillText('根性より、設計。', M, fy);
+  g.fillStyle = C.cyanHi; g.font = '500 26px "IBM Plex Mono", monospace';
+  const tag = '@enlab_official';
+  g.fillText(tag, W - M - g.measureText(tag).width, fy - 4);
+  g.fillStyle = C.ink3; g.font = '400 20px "IBM Plex Mono", monospace';
+  spaced(g, 'ENDURANCE LAB ／ トレイルランナーのオンラインサロン', M, fy + 46, 1);
+}
+
+async function openShare(){
+  show('s-share');
+  try {
+    await document.fonts.load('900 48px "Zen Kaku Gothic New"');
+    await document.fonts.load('400 26px "IBM Plex Mono"');
+    await document.fonts.ready;
+  } catch(e){}
+  drawCard();
+}
+
+$('#toShare').onclick = openShare;
+$('#toShare2').onclick = openShare;
+$('#shareBack').onclick = () => show('s-result');
+
+document.querySelectorAll('#fmtSeg button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('#fmtSeg button').forEach(x => x.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    fmt = b.dataset.f;
+    drawCard();
+  };
+});
+$('#privToggle').onclick = () => {
+  priv = !priv;
+  $('#privToggle').setAttribute('aria-pressed', priv ? 'true' : 'false');
+  drawCard();
+};
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected','false'));
+    t.setAttribute('aria-selected','true');
+    document.querySelectorAll('.pane').forEach(p => p.hidden = true);
+    $('#p-' + t.dataset.p).hidden = false;
+    $('#s-result .scroll').scrollTop = 0;
+  };
+});
+
+
+
+/* ---------- 保存とシェア ---------- */
+function cardBlob(){
+  return new Promise(res => cv.toBlob(res, 'image/png'));
+}
+$('#saveImg').onclick = async () => {
+  const blob = await cardBlob();
+  const file = new File([blob], 'enlab-test.png', { type: 'image/png' });
+  if (navigator.canShare && navigator.canShare({ files:[file] })){
+    try { await navigator.share({ files:[file] }); return; } catch(e){}
+  }
+  $('#shareNote').textContent = 'この端末では自動保存ができません。画像を長押しして「写真に保存」を選んでください。';
+};
+$('#shareLine').onclick = async () => {
+  const D = shareData();
+  const line1 = D.d >= 0 ? ('初期テスト、前回から +' + D.d + '点でした。') : '初期テストを測りました。';
+  const text  = line1 + '\n' + D.V[0] + '\n\n#エンラボ #トレイルランニング';
+  if (liff.isApiAvailable('shareTargetPicker')){
+    try {
+      await liff.shareTargetPicker([{ type:'text', text }]);
+      $('#shareNote').textContent = '送信しました。画像も送るときは「画像を保存」してから添付してください。';
+      return;
+    } catch(e){}
+  }
+  $('#shareNote').textContent = 'この環境では共有できません。「画像を保存」から保存してください。';
+};
+
+</script>
+</body>
+</html>
