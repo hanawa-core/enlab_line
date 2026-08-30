@@ -1196,7 +1196,7 @@ function drawCard(){
   g.fillStyle = C.ink3; g.font = MONO('400', 24);
   spaced(g, !measured ? '記録なし' : (hasPrev ? '前回からの変化' : '今回のスコア'), M, y, 3);
 
-  y += gp(160);
+  y += Math.max(gp(160), Math.round((story ? 186 : 168) * 0.88));
   const heroTxt = !measured ? '—' : (hasPrev ? ((D.d >= 0 ? '+' : '') + D.d) : String(D.tot));
   g.save();
   g.font = ZEN('900', story ? 186 : 168);
@@ -1264,14 +1264,25 @@ function drawCard(){
   y = vTop + lh * vLines.length + gp(56);
 
   /* ---------- gained ---------- */
-  const footTop = H - 214;
-  g.fillStyle = C.ink3; g.font = MONO('400', 22);
-  spaced(g, D.gained.length ? '▲ 伸びた項目' : (measured ? '── 維持' : '── 記録なし'), M, y, 3);
-  y += gp(48);
+  const measSp = (t, tr) => { let w = 0; for (const ch of t) w += g.measureText(ch).width + tr; return w - tr; };
+  const centerSp = (t, yy, tr) => spaced(g, t, (W - measSp(t, tr)) / 2, yy, tr);
+  const center = (t, yy) => g.fillText(t, (W - g.measureText(t).width) / 2, yy);
 
-  const rowH = f(48);
-  const room = Math.max(0, Math.floor((footTop - y) / rowH));
-  D.gained.slice(0, Math.min(room, story ? 5 : 3)).forEach(it => {
+  const rowH   = f(story ? 48 : 43);
+  const reserve = story ? 560 : 430;
+  const listCap = Math.max(0, Math.floor((H - reserve - y - gp(48)) / rowH));
+  const shown   = D.gained.slice(0, Math.min(listCap, story ? 5 : 3));
+
+  const gLabel = shown.length ? '▲ 伸びた項目'
+               : (!measured ? '── 記録なし'
+               : (hasPrev && !D.gained.length ? '── 維持' : ''));
+  if (gLabel){
+    g.fillStyle = C.ink3; g.font = MONO('400', 22);
+    spaced(g, gLabel, M, y, 3);
+    y += gp(48);
+  }
+
+  shown.forEach(it => {
     g.fillStyle = C.ink2; g.font = ZEN('500', 30);
     g.fillText(it.name, M, y);
     if (!priv){
@@ -1282,17 +1293,48 @@ function drawCard(){
     y += rowH;
   });
 
-  /* ---------- footer ---------- */
-  const fy = H - 150;
-  g.strokeStyle = 'rgba(56,189,248,0.25)'; g.lineWidth = 1;
-  g.beginPath(); g.moveTo(M, fy - 58); g.lineTo(W - M, fy - 58); g.stroke();
-  g.fillStyle = C.ink; g.font = ZEN('900', 34);
-  g.fillText('根性より、設計。', M, fy);
-  g.fillStyle = C.cyanHi; g.font = MONO('500', 26);
-  const tag = '@enlab_official';
-  g.fillText(tag, W - M - g.measureText(tag).width, fy - 4);
-  g.fillStyle = C.ink3; g.font = MONO('400', 20);
-  spaced(g, 'ENDURANCE LAB ／ トレイルランナーのオンラインサロン', M, fy + 46, 1);
+  /* ---------- 告知ブロック（余白をここで使い切る）---------- */
+  const promoH   = f(story ? 300 : 250);
+  const bottomPad = f(story ? 96 : 84);
+  const slackTop  = y + gp(40);
+  const slackBot  = H - bottomPad - promoH;
+  const pTop = Math.max(slackTop, Math.min(slackBot, slackTop + (slackBot - slackTop) * 0.56));
+
+  let py = pTop;
+
+  /* 上の罫線 */
+  const rw = f(story ? 330 : 285);
+  g.strokeStyle = 'rgba(56,189,248,0.28)'; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(W/2 - rw, py); g.lineTo(W/2 + rw, py); g.stroke();
+
+  /* ワードマーク */
+  py += f(story ? 92 : 84);
+  g.save();
+  g.font = ZEN('900', story ? 74 : 64);
+  g.shadowColor = 'rgba(56,189,248,0.42)'; g.shadowBlur = 48;
+  g.fillStyle = C.ink;
+  centerSp('ENDURANCE LAB', py, f(story ? 15 : 13));
+  g.restore();
+
+  /* タグライン */
+  py += f(story ? 56 : 50);
+  g.fillStyle = C.cyanHi; g.font = ZEN('700', story ? 30 : 27);
+  center('トレイルランナーのための オンラインサロン', py);
+
+  /* 哲学 */
+  py += f(story ? 74 : 66);
+  g.fillStyle = C.ink2; g.font = ZEN('900', story ? 36 : 32);
+  center('根性より、設計。', py);
+
+  /* アカウント */
+  py += f(story ? 54 : 48);
+  g.fillStyle = C.ink3; g.font = MONO('500', story ? 26 : 24);
+  centerSp('@enlab_official', py, 2);
+
+  /* 下の罫線 */
+  py += f(story ? 40 : 36);
+  g.strokeStyle = 'rgba(56,189,248,0.28)'; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(W/2 - rw, py); g.lineTo(W/2 + rw, py); g.stroke();
 }
 
 async function openShare(){
