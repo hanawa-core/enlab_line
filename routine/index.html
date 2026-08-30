@@ -111,7 +111,7 @@
     <p class="lede">どれを押しても、継続はつながります。走れない日も、休んだ日も。</p>
     <div class="opts">
       <button class="opt" data-t="run"><span class="em">🏃</span><span class="tx">走った</span><span class="mk">›</span></button>
-      <button class="opt" data-t="care"><span class="em">🧘</span><span class="tx">整えた<small>5分でもOK</small></span><span class="mk">›</span></button>
+      <button class="opt" data-t="care"><span class="em">🧘</span><span class="tx">整えた／鍛えた<small>5分でもOK</small></span><span class="mk">›</span></button>
       <button class="opt" data-t="rest"><span class="em">😴</span><span class="tx">休んだ<small>これも大事な一日</small></span><span class="mk">›</span></button>
     </div>
   </div>
@@ -124,17 +124,17 @@
       <div class="total" id="vTotal"></div>
       <div class="mon">
         <div class="r"><small>走った</small><b id="mRun">0</b></div>
-        <div class="c"><small>整えた</small><b id="mCare">0</b></div>
+        <div class="c"><small>整えた／鍛えた</small><b id="mCare">0</b></div>
         <div class="s"><small>休んだ</small><b id="mRest">0</b></div>
       </div>
     </div>
     <p class="again" id="againTx"></p>
     <div class="opts" id="againOpts">
       <button class="opt" data-t="run"><span class="em">🏃</span><span class="tx">走った</span><span class="mk">›</span></button>
-      <button class="opt" data-t="care"><span class="em">🧘</span><span class="tx">整えた</span><span class="mk">›</span></button>
+      <button class="opt" data-t="care"><span class="em">🧘</span><span class="tx">整えた／鍛えた</span><span class="mk">›</span></button>
       <button class="opt" data-t="rest"><span class="em">😴</span><span class="tx">休んだ</span><span class="mk">›</span></button>
     </div>
-    <p class="foot">整えてから、積む。</p>
+    <p class="foot">今日の取り組みが明日を創る。</p>
   </div>
 
   <div id="err" hidden><div class="msg"><b>読み込めませんでした</b>電波の良いところで、もう一度メニューから開いてみてください。</div></div>
@@ -144,7 +144,7 @@
 <script src="../config.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
-const LABEL = { run:'走った', care:'整えた', rest:'休んだ' };
+const LABEL = { run:'走った', care:'整えた／鍛えた', rest:'休んだ' };
 let idToken = null, state = null;
 
 async function api(action, extra = {}){

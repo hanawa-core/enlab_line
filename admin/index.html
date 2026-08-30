@@ -324,7 +324,8 @@
 
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" aria-selected="true" data-p="keep">継続</button>
-        <button class="tab" role="tab" aria-selected="false" data-p="test">初期テスト</button>
+        <button class="tab" role="tab" aria-selected="false" data-p="test">フィジカルテスト</button>
+        <button class="tab" role="tab" aria-selected="false" data-p="fuel">補給計算</button>
         <div class="bar-actions">
           <button class="mini" id="reload">再読み込み</button>
           <button class="mini" id="logout">キーを消す</button>
@@ -351,7 +352,7 @@
           </div>
           <div class="legend">
             <span><i style="background:var(--cyan-hi);border-color:var(--cyan-hi)"></i>走った</span>
-            <span><i style="background:var(--teal);border-color:var(--teal)"></i>整えた</span>
+            <span><i style="background:var(--teal);border-color:var(--teal)"></i>整えた／鍛えた</span>
             <span><i style="background:var(--slate);border-color:var(--slate)"></i>休んだ</span>
             <span><i style="background:var(--void)"></i>記録なし</span>
           </div>
@@ -369,6 +370,24 @@
                 <th>柔軟性</th><th>動きの質</th><th>フラグ</th>
               </tr></thead>
               <tbody id="tbody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div class="pane" id="p-fuel" hidden>
+        <section>
+          <h2 class="sec">保存された補給計画 <span class="cnt" id="fucount"></span></h2>
+          <p class="lede">会員がどんなレースを想定して、何をどれだけ摂る計画を立てたか。行をクリックすると、その人の詳細が開きます。新しい順。</p>
+          <div class="tblwrap">
+            <table>
+              <thead><tr>
+                <th>LINE表示名</th><th>保存日</th><th>レース名</th>
+                <th style="text-align:right">距離</th><th style="text-align:right">D+</th>
+                <th style="text-align:right">想定時間</th>
+                <th style="text-align:right">総kcal</th><th style="text-align:right">水分</th><th style="text-align:right">Na</th>
+              </tr></thead>
+              <tbody id="fubody"></tbody>
             </table>
           </div>
         </section>
@@ -482,11 +501,15 @@ function render(){
   const activeWeek = M.filter(m => m.days_since_last !== null && m.days_since_last <= 6).length;
   const follow = M.filter(m => m.status === 'watch' || m.status === 'risk' || m.status === 'never');
   const noTest = M.filter(m => !m.test || !m.test.latest_on).length;
+  const FP = DATA.fuelPlans || [];
+  const fuelUsers = new Set(FP.map(f => f.line_user_id)).size;
+  const nameOf = new Map(DATA.members.map(m => [m.line_user_id, m.display_name || '（名前なし）']));
   $('#kpis').innerHTML = [
     ['good','会員数', n, '', '退会者を除く在籍'],
     ['good','今週アクティブ', activeWeek, '／'+n, n ? Math.round(activeWeek/n*100)+'% が7日以内に押している' : '—'],
     [follow.length ? 'warn':'good','要フォロー', follow.length, '人', '7日以上、記録がない'],
-    [noTest ? 'bad':'good','初期テスト未実施', noTest, '人', '測っていないと比較が始まらない'],
+    [noTest ? 'bad':'good','テスト未実施', noTest, '人', '測っていないと比較が始まらない'],
+    ['good','補給計算の利用', fuelUsers, '人', (DATA.fuelPlans||[]).length + ' 件の計画を保存'],
   ].map(([c,l,v,u,note]) =>
     '<div class="kpi '+c+'"><small>'+l+'</small><b>'+v+'<span class="u">'+u+'</span></b><em>'+note+'</em></div>'
   ).join('');
@@ -505,7 +528,7 @@ function render(){
       '<div class="r1"><span class="nm">'+esc(m.name)+'</span><span class="st">'+lab+'</span></div>'+
       big +
       '<div class="meta">通算 '+m.total_days+'日　／　直近30日 '+m.days.filter(Boolean).length+'日<br>'+
-      (m.test && m.test.latest_on ? '初期テスト '+m.test.total_got+'/'+m.test.total_max+'（'+dstr(m.test.latest_on)+'）' : '初期テスト 未実施')+
+      (m.test && m.test.latest_on ? 'フィジカルテスト '+m.test.total_got+'/'+m.test.total_max+'（'+dstr(m.test.latest_on)+'）' : 'フィジカルテスト 未実施')+
       '</div></div>';
   }).join('') || '<p class="lede">7日以上あいている人はいません。</p>';
 
@@ -526,7 +549,7 @@ function render(){
       '<td class="num" style="color:'+col+'">'+last+'</td></tr>';
   }).join('');
 
-  /* 初期テスト */
+  /* フィジカルテスト */
   const tested = M.filter(m => m.test && m.test.latest_on)
                   .sort((a,b) => a.test.total_got - b.test.total_got);
   const untested = M.filter(m => !m.test || !m.test.latest_on);
@@ -553,6 +576,25 @@ function render(){
       '<tr data-u="'+m.line_user_id+'" style="opacity:.55"><td class="nm">'+esc(m.name)+'</td>'+
       '<td class="num" style="color:var(--ink-3)">—</td><td class="num">—</td><td class="num">—</td>'+
       '<td>—</td><td>—</td><td><span class="pill never">未実施</span></td></tr>').join('');
+
+  /* 補給計算 */
+  $('#fucount').textContent = FP.length + ' 件 ／ ' + fuelUsers + ' 人';
+  $('#fubody').innerHTML = FP.length ? FP.map(f => {
+    const pl = f.payload || {}, st = pl.state || {}, rc = st.race || {}, rs = pl.results || {};
+    const num = (v, u) => (v === undefined || v === null || v === '' || Number(v) === 0) ? '—' : (v + (u || ''));
+    const hm = (rc.timeH || rc.timeM) ? ((rc.timeH || 0) + 'h' + String(rc.timeM || 0).padStart(2,'0')) : '—';
+    return '<tr data-u="' + f.line_user_id + '">' +
+      '<td class="nm">' + esc(nameOf.get(f.line_user_id) || '（退会/不明）') + '</td>' +
+      '<td class="num" style="color:var(--ink-3)">' + dstr(f.created_at) + '</td>' +
+      '<td>' + esc(f.race_name || '（レース名なし）') + '</td>' +
+      '<td class="num">' + num(rc.distance, 'km') + '</td>' +
+      '<td class="num">' + num(rc.elevationUp, 'm') + '</td>' +
+      '<td class="num">' + hm + '</td>' +
+      '<td class="num"><b>' + (rs.totalCal || '—') + '</b></td>' +
+      '<td class="num">' + (rs.totalWater ? rs.totalWater + 'L' : '—') + '</td>' +
+      '<td class="num">' + (rs.totalNa ? rs.totalNa + 'mg' : '—') + '</td>' +
+    '</tr>';
+  }).join('') : '<tr><td colspan="9" style="color:var(--ink-3);padding:22px 14px">まだ保存された補給計画はありません。</td></tr>';
 
   $('#foot').textContent = 'Endurance Lab ／ 管理画面　—　' + dstr(today) + ' 時点';
 
@@ -605,16 +647,29 @@ function detailHTML(m, d){
     '<h4>直近90日</h4><div class="cal">'+cal+'</div>'+
     '<div class="legend" style="margin-top:10px">'+
       '<span><i style="background:var(--cyan-hi);border-color:var(--cyan-hi)"></i>走った '+cnt.run+'</span>'+
-      '<span><i style="background:var(--teal);border-color:var(--teal)"></i>整えた '+cnt.care+'</span>'+
+      '<span><i style="background:var(--teal);border-color:var(--teal)"></i>整えた／鍛えた '+cnt.care+'</span>'+
       '<span><i style="background:var(--slate);border-color:var(--slate)"></i>休んだ '+cnt.rest+'</span>'+
     '</div>';
 
+  const fps = d.fuelPlans || [];
+  html += '<h4>補給計算</h4>';
+  html += fps.length ? ('<div class="items">' + fps.map(f => {
+      const pl = f.payload || {}, st = pl.state || {}, rc = st.race || {}, rs = pl.results || {};
+      const line = [rc.distance ? rc.distance + 'km' : null,
+                    rc.elevationUp ? 'D+' + rc.elevationUp + 'm' : null,
+                    rs.totalCal ? rs.totalCal + 'kcal' : null,
+                    rs.totalWater ? rs.totalWater + 'L' : null].filter(Boolean).join('　');
+      return '<div class="irow"><span>' + esc(f.race_name || '（レース名なし）') + '</span>' +
+        '<span class="v" style="font-family:var(--mono);font-size:11.5px;color:var(--ink-3)">' + line + '</span>' +
+        '<span class="n" style="width:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3)">' + dstr(f.created_at) + '</span></div>';
+    }).join('') + '</div>') : '<p class="empty">まだ補給計算を保存していません。</p>';
+
   if (!d.assessments.length){
-    html += '<h4>初期テスト</h4><p class="empty">まだ測定していません。</p>';
+    html += '<h4>フィジカルテスト</h4><p class="empty">まだ測定していません。</p>';
     return html;
   }
 
-  html += '<h4>初期テストの推移</h4><div class="items">' +
+  html += '<h4>フィジカルテストの推移</h4><div class="items">' +
     d.assessments.map(a =>
       '<div class="irow"><span>'+dstr(a.tested_on)+'</span>'+
       '<span class="v" style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">'+
