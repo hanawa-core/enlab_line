@@ -83,6 +83,49 @@
   .mon b{font-family:var(--display);font-weight:900;font-size:19px}
   .mon .r b{color:var(--cyan-hi)} .mon .c b{color:var(--teal)} .mon .s b{color:var(--ink-2)}
 
+  /* ---- 今月のランキング ---- */
+  .rank{margin-top:22px;border-top:1px solid var(--line-soft);padding-top:18px}
+  .rank h2{
+    font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--cyan-hi);margin:0 0 4px;font-weight:500;display:flex;align-items:center;gap:10px;
+  }
+  .rank h2::after{content:"";flex:1;height:1px;background:rgba(56,189,248,.22)}
+  .rank .sum{font-size:12.5px;color:var(--ink-3);line-height:1.8;margin:0 0 13px}
+  .rank .sum b{color:var(--ink-2);font-family:var(--display);font-weight:700}
+  .rlist{display:grid;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);
+    border-radius:7px;overflow:hidden}
+  .rrow{
+    background:var(--surface);padding:13px 14px;display:grid;
+    grid-template-columns:30px 1fr auto;gap:13px;align-items:center;font-size:14px;
+  }
+  .rrow .bar{
+    height:8px;border-radius:2px;background:var(--void);
+    border:1px solid var(--line-soft);overflow:hidden;position:relative;
+  }
+  .rrow .bar i{display:block;height:100%;background:var(--slate)}
+  .rrow.podium .bar i{background:var(--teal)}
+  .rrow.me .bar i{background:linear-gradient(90deg,var(--cyan),var(--cyan-hi));
+    box-shadow:0 0 12px rgba(56,189,248,.55)}
+  .rrow .dy em{
+    font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+    color:var(--cyan-hi);margin-right:8px;
+  }
+  .rrow .no{
+    font-family:var(--display);font-weight:900;font-size:15px;color:var(--ink-3);
+    text-align:center;font-variant-numeric:tabular-nums;
+  }
+  .rrow .dy{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+  .rrow .dy b{font-family:var(--display);font-weight:900;font-size:16px;color:var(--ink)}
+  .rrow.podium .no{color:var(--cyan-hi)}
+  .rrow.me{background:var(--surface-2);box-shadow:inset 2px 0 0 var(--cyan)}
+  .rrow.me .dy b{color:var(--cyan-hi)}
+  .rank .mine{
+    margin-top:10px;background:var(--surface);border:1px dashed var(--line);
+    border-radius:7px;padding:12px 14px;font-size:13px;color:var(--ink-2);line-height:1.8;
+  }
+  .rank .mine b{font-family:var(--display);font-weight:900;color:var(--cyan-hi);font-size:17px}
+  .rank .note{font-size:11px;color:var(--ink-3);line-height:1.8;margin:12px 0 0}
+
   .again{font-size:12.5px;color:var(--ink-3);margin:0 0 12px;line-height:1.8}
   .foot{margin-top:22px;font-family:var(--mono);font-size:10px;color:var(--ink-3);
     letter-spacing:.1em;text-align:center;line-height:2}
@@ -134,6 +177,14 @@
       <button class="opt" data-t="care"><span class="em">🧘</span><span class="tx">整えた／鍛えた</span><span class="mk">›</span></button>
       <button class="opt" data-t="rest"><span class="em">😴</span><span class="tx">休んだ</span><span class="mk">›</span></button>
     </div>
+    <div class="rank" id="rank" hidden>
+      <h2 id="rankTitle">今月の記録</h2>
+      <p class="sum" id="rankSum"></p>
+      <div class="rlist" id="rankList"></div>
+      <div class="mine" id="rankMine"></div>
+      <p class="note">走った・整えた／鍛えた・休んだ、どれも1日として数えます。<br>続けた日数の順です。量ではありません。名前は出ません。</p>
+    </div>
+
     <p class="foot">今日の取り組みが明日を創る。</p>
   </div>
 
@@ -161,6 +212,36 @@ async function api(action, extra = {}){
   return r.json();
 }
 
+function esc(t){ return String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+async function loadRank(){
+  let r;
+  try { r = await api('record.rank'); } catch(e){ return; }
+  if (!r || !r.people) return;
+
+  $('rankTitle').textContent = r.month + ' の記録';
+  $('rankSum').innerHTML =
+    '今月は <b>' + r.people + '人</b> が記録しています（在籍 ' + r.members + '人）。<br>' +
+    'みんなで積み上げた日数は <b>' + r.totalDays + '日</b>。';
+
+  const maxDays = Math.max(1, ...r.top.map(t => t.days));
+  $('rankList').innerHTML = r.top.map(t =>
+    '<div class="rrow' + (t.rank <= 3 ? ' podium' : '') + (t.me ? ' me' : '') + '">' +
+      '<span class="no">' + t.rank + '</span>' +
+      '<span class="bar"><i style="width:' + Math.round(t.days / maxDays * 100) + '%"></i></span>' +
+      '<span class="dy">' + (t.me ? '<em>あなた</em>' : '') + '<b>' + t.days + '</b> 日</span>' +
+    '</div>').join('');
+
+  const inTop = r.top.some(t => t.me);
+  $('rankMine').innerHTML = r.me && r.me.rank
+    ? (inTop
+        ? 'あなたは今月 <b>' + r.me.days + '</b> 日。この調子で。'
+        : 'あなたは今月 <b>' + r.me.days + '</b> 日、<b>' + r.me.rank + '</b> 位です。')
+    : '今月はまだ記録がありません。今日から1日目です。';
+  $('rankMine').hidden = false;
+  $('rank').hidden = false;
+}
+
 function render(){
   $('loading').hidden = true;
   if (!state.today){
@@ -185,6 +266,7 @@ async function put(type, btns){
   try {
     state = await api('record.put', { type });
     render();
+    loadRank();
     window.scrollTo({ top:0, behavior:'smooth' });
   } catch(e){
     $('err').hidden = false;
@@ -204,6 +286,7 @@ document.querySelectorAll('.opt').forEach(b => {
     idToken = liff.getIDToken();
     state = await api('record.get');
     render();
+    loadRank();
   } catch(e){
     console.error(e);
     $('loading').hidden = true;

@@ -583,7 +583,7 @@ function render(){
     const pl = f.payload || {}, st = pl.state || {}, rc = st.race || {}, rs = pl.results || {};
     const num = (v, u) => (v === undefined || v === null || v === '' || Number(v) === 0) ? '—' : (v + (u || ''));
     const hm = (rc.timeH || rc.timeM) ? ((rc.timeH || 0) + 'h' + String(rc.timeM || 0).padStart(2,'0')) : '—';
-    return '<tr data-u="' + f.line_user_id + '">' +
+    return '<tr data-fuel="' + f.id + '">' +
       '<td class="nm">' + esc(nameOf.get(f.line_user_id) || '（退会/不明）') + '</td>' +
       '<td class="num" style="color:var(--ink-3)">' + dstr(f.created_at) + '</td>' +
       '<td>' + esc(f.race_name || '（レース名なし）') + '</td>' +
@@ -600,6 +600,9 @@ function render(){
 
   document.querySelectorAll('[data-u]').forEach(el => {
     el.onclick = () => openDetail(el.dataset.u);
+  });
+  document.querySelectorAll('[data-fuel]').forEach(el => {
+    el.onclick = () => openFuel(Number(el.dataset.fuel));
   });
 }
 
@@ -699,6 +702,106 @@ function detailHTML(m, d){
   });
   html += '</div>';
   return html;
+}
+
+/* ---------- 補給計算の全項目 ---------- */
+const SWEAT_LABEL = { low:'少ない', normal:'ふつう', high:'多い' };
+const GENDER_LABEL = { male:'男性', female:'女性' };
+
+function kv(rows){
+  return '<div class="kv">' + rows.map(([k,v]) =>
+    '<div><small>'+k+'</small><b style="font-size:18px">'+(v===''||v===undefined||v===null?'—':v)+'</b></div>'
+  ).join('') + '</div>';
+}
+
+function openFuel(id){
+  const f = (DATA.fuelPlans || []).find(x => x.id === id);
+  if (!f) return;
+  const nm = (DATA.members.find(m => m.line_user_id === f.line_user_id) || {}).display_name || '（退会/不明）';
+  $('#d-name').textContent = f.race_name || '（レース名なし）';
+  $('#d-uid').textContent  = nm + '　／　' + dstr(f.created_at) + ' 保存';
+
+  const pl = f.payload || {}, st = pl.state || {};
+  const pr = st.profile || {}, rc = st.race || {}, sp = st.supply || {};
+  const rs = st.results || {}, sm = pl.results || {};
+  const as = st.asPoints || [];
+  const sg = pl.segments || [];
+  const n = (v, u) => (v === undefined || v === null || v === '') ? '—' : (v + (u || ''));
+
+  let h = '';
+
+  h += '<h4>ランナー</h4>' + kv([
+    ['性別',       GENDER_LABEL[pr.gender] || '—'],
+    ['体重',       n(pr.weight, ' kg')],
+    ['装備重量',   n(pr.equipWeight, ' kg')],
+    ['発汗タイプ', SWEAT_LABEL[pr.sweatType] || pr.sweatType || '—'],
+  ]);
+
+  h += '<h4>レース条件</h4>' + kv([
+    ['距離',     n(rc.distance, ' km')],
+    ['獲得標高', n(rc.elevationUp, ' m')],
+    ['下り',     n(rc.elevationDown, ' m')],
+    ['想定時間', (rc.timeH || rc.timeM) ? ((rc.timeH||0)+'h'+String(rc.timeM||0).padStart(2,'0')) : '—'],
+    ['気温',     n(rc.temp, ' ℃')],
+    ['湿度',     n(rc.humidity, ' %')],
+    ['強度',     rs.displayIntensity || rc.intensity || '—'],
+    ['想定速度', n(rs.speedKmh, ' km/h')],
+  ]);
+
+  h += '<h4>使うジェルの前提</h4>' + kv([
+    ['炭水化物 / 個', n(sp.gelCarbs, ' g')],
+    ['ナトリウム / 個', n(sp.gelNa, ' mg')],
+  ]);
+
+  h += '<h4>合計</h4>' + kv([
+    ['エネルギー', n(sm.totalCal || rs.totalCal, ' kcal')],
+    ['水分',       n(sm.totalWater || rs.totalWaterL, ' L')],
+    ['ナトリウム', n(sm.totalNa || rs.totalNa, ' mg')],
+    ['食塩',       n(rs.totalSalt, ' g')],
+  ]);
+
+  h += '<h4>1時間あたり</h4>' + kv([
+    ['炭水化物',   n(sm.recCarbs || rs.hourlyCarbs, ' g')],
+    ['水分',       n(sm.recWater || rs.hourlyWater, ' mL')],
+    ['ナトリウム', n(sm.recNa || rs.hourlyNa, ' mg')],
+    ['食塩',       n(rs.hourlySalt, ' g')],
+  ]);
+
+  if (sg.length){
+    h += '<h4>区間ごとの補給計画</h4><div class="tblwrap"><table><thead><tr>' +
+      '<th>区間</th><th style="text-align:right">距離</th><th style="text-align:right">水分</th>' +
+      '<th style="text-align:right">糖質</th><th style="text-align:right">Na</th>' +
+      '<th style="text-align:right">ジェル</th><th style="text-align:right">不足Na</th><th style="text-align:right">食塩</th>' +
+      '</tr></thead><tbody>' +
+      sg.map(x =>
+        '<tr'+(x.isSupport?' style="background:var(--surface-2)"':'')+'>'+
+        '<td>'+esc(x.label||'')+'</td>'+
+        '<td class="num">'+(x.diff!==undefined?Number(x.diff).toFixed(1)+'km':'—')+'</td>'+
+        '<td class="num">'+n(x.reqWater,'mL')+'</td>'+
+        '<td class="num">'+n(x.reqCarbs,'g')+'</td>'+
+        '<td class="num">'+n(x.reqNa,'mg')+'</td>'+
+        '<td class="num"><b>'+n(x.gels,'個')+'</b></td>'+
+        '<td class="num">'+n(x.naDeficit,'mg')+'</td>'+
+        '<td class="num">'+n(x.saltDef,'g')+'</td></tr>'
+      ).join('') + '</tbody></table></div>';
+  }
+
+  if (as.length){
+    h += '<h4>エイドステーション</h4><div class="items">' +
+      [...as].sort((a,b)=>parseFloat(a.km||0)-parseFloat(b.km||0)).map(a2 =>
+        '<div class="irow"><span>'+esc(a2.name||'（名称なし）')+
+        (a2.isSupport?' <span class="pill weak">サポート</span>':'')+'</span>'+
+        '<span></span><span class="n" style="width:auto">'+n(a2.km,' km')+'</span></div>'
+      ).join('') + '</div>';
+  }
+
+  h += '<h4>保存された生データ</h4>' +
+       '<pre style="background:var(--surface-2);border:1px solid var(--line-soft);border-radius:5px;' +
+       'padding:12px;overflow-x:auto;font-family:var(--mono);font-size:10.5px;line-height:1.6;color:var(--ink-2);' +
+       'white-space:pre-wrap;word-break:break-all">' + esc(JSON.stringify(pl, null, 1)) + '</pre>';
+
+  $('#d-body').innerHTML = h;
+  $('#ov').hidden = false;
 }
 
 /* ---------- タブ ---------- */
