@@ -1108,132 +1108,154 @@ function shareData(){
 
 function drawCard(){
   const D = shareData();
-  const W = 1080, H = fmt === 'story' ? 1920 : 1350;
+  const story = fmt === 'story';
+  const W = 1080, H = story ? 1920 : 1350;
   const M = 96, IW = W - M * 2;
   cv.width = W; cv.height = H;
   const g = cx;
 
-  /* ground */
+  const S = story ? 1 : 0.90;                 // 文字の縮尺
+  const G = story ? 1 : 0.62;                 // 余白の縮尺
+  const f = (n) => Math.round(n * S);
+  const gp = (n) => Math.round(n * G);
+  const ZEN  = (w, n) => w + ' ' + f(n) + 'px "Zen Kaku Gothic New", sans-serif';
+  const MONO = (w, n) => w + ' ' + f(n) + 'px "IBM Plex Mono", monospace';
+
+  /* ---------- ground ---------- */
   g.fillStyle = C.navy; g.fillRect(0, 0, W, H);
   const rg = g.createRadialGradient(W/2, H*0.10, 0, W/2, H*0.10, W);
   rg.addColorStop(0, 'rgba(14,165,233,0.22)'); rg.addColorStop(1, 'rgba(14,165,233,0)');
   g.fillStyle = rg; g.fillRect(0, 0, W, H);
   g.strokeStyle = 'rgba(56,189,248,0.055)'; g.lineWidth = 1;
   for (let x = 0; x <= W; x += 60){ g.beginPath(); g.moveTo(x+.5, 0); g.lineTo(x+.5, H); g.stroke(); }
-  for (let y = 0; y <= H; y += 60){ g.beginPath(); g.moveTo(0, y+.5); g.lineTo(W, y+.5); g.stroke(); }
-
-  /* corner ticks */
+  for (let v = 0; v <= H; v += 60){ g.beginPath(); g.moveTo(0, v+.5); g.lineTo(W, v+.5); g.stroke(); }
   g.strokeStyle = 'rgba(56,189,248,0.45)'; g.lineWidth = 3;
-  const t = 44, o = 44;
-  [[o,o,1,1],[W-o,o,-1,1],[o,H-o,1,-1],[W-o,H-o,-1,-1]].forEach(([x,y,sx,sy]) => {
-    g.beginPath(); g.moveTo(x + sx*t, y); g.lineTo(x, y); g.lineTo(x, y + sy*t); g.stroke();
+  const tk = 44, o = 44;
+  [[o,o,1,1],[W-o,o,-1,1],[o,H-o,1,-1],[W-o,H-o,-1,-1]].forEach(([x,v,sx,sy]) => {
+    g.beginPath(); g.moveTo(x + sx*tk, v); g.lineTo(x, v); g.lineTo(x, v + sy*tk); g.stroke();
   });
-
-  const story = fmt === 'story';
-  const K = story ? 1 : 0.80;              // vertical compression for feed
-  const Y = (v) => Math.round(story ? v : 150 + (v - 150) * K);
 
   g.textBaseline = 'alphabetic';
+  const hasPrev  = !!PREV_ON;
+  const measured = D.max > 0;
+  let y;
 
-  /* masthead */
-  g.fillStyle = C.cyanHi; g.font = '500 24px "IBM Plex Mono", monospace';
-  const mw = spaced(g, 'ENDURANCE LAB', M, Y(178), 9);
+  /* ---------- masthead ---------- */
+  y = 176;
+  g.fillStyle = C.cyanHi; g.font = MONO('500', 24);
+  const mw = spaced(g, 'ENDURANCE LAB', M, y, 9);
   g.strokeStyle = 'rgba(56,189,248,0.25)'; g.lineWidth = 1;
-  g.beginPath(); g.moveTo(M + mw + 26, Y(171)); g.lineTo(W - M, Y(171)); g.stroke();
+  g.beginPath(); g.moveTo(M + mw + 26, y - 8); g.lineTo(W - M, y - 8); g.stroke();
 
-  g.fillStyle = C.ink; g.font = '900 48px "Zen Kaku Gothic New", sans-serif';
-  g.fillText('初期テスト', M, Y(290));
-  g.fillStyle = C.ink3; g.font = '400 26px "IBM Plex Mono", monospace';
-  g.fillText(CUR_ON.replace(/-/g,'.') + (PREV_ON ? '  ／  ' + gapText() : ''), M, Y(340));
+  /* ---------- title ---------- */
+  y += gp(116);
+  g.fillStyle = C.ink; g.font = ZEN('900', 48);
+  g.fillText('初期テスト', M, y);
+  y += gp(52);
+  g.fillStyle = C.ink3; g.font = MONO('400', 26);
+  g.fillText(CUR_ON.replace(/-/g,'.') + (hasPrev ? '  ／  ' + gapText() : ''), M, y);
 
-  /* hero ── the change */
-  g.fillStyle = C.ink3; g.font = '400 24px "IBM Plex Mono", monospace';
-  spaced(g, PREV_ON ? '前回からの変化' : '今回のスコア', M, Y(470), 3);
+  /* ---------- hero ---------- */
+  y += gp(122);
+  g.fillStyle = C.ink3; g.font = MONO('400', 24);
+  spaced(g, !measured ? '記録なし' : (hasPrev ? '前回からの変化' : '今回のスコア'), M, y, 3);
 
-  const big = story ? 190 : 165;
+  y += gp(160);
+  const heroTxt = !measured ? '—' : (hasPrev ? ((D.d >= 0 ? '+' : '') + D.d) : String(D.tot));
   g.save();
-  g.shadowColor = 'rgba(56,189,248,0.55)'; g.shadowBlur = 60;
+  g.font = ZEN('900', story ? 186 : 168);
+  const heroW = g.measureText(heroTxt).width;      /* ← restore の前に測る */
+  g.shadowColor = 'rgba(56,189,248,0.5)'; g.shadowBlur = 60;
   g.fillStyle = C.cyanHi;
-  g.font = '900 ' + big + 'px "Zen Kaku Gothic New", sans-serif';
-  const dTxt = (D.d >= 0 ? '+' : '') + D.d;
-  g.fillText(dTxt, M, Y(640));
+  g.fillText(heroTxt, M, y);
   g.restore();
-  const dW = g.measureText(dTxt).width;
 
-  if (!priv){
-    g.fillStyle = C.ink2; g.font = '400 44px "IBM Plex Mono", monospace';
-    g.fillText(D.prevTot + ' → ' + D.tot, M + dW + 40, Y(618));
-    g.fillStyle = C.ink3; g.font = '400 28px "IBM Plex Mono", monospace';
-    g.fillText('/ ' + D.max, M + dW + 40, Y(662));
-  } else {
-    g.fillStyle = C.ink2; g.font = '700 38px "Zen Kaku Gothic New", sans-serif';
-    g.fillText('点、伸びました', M + dW + 34, Y(624));
+  if (measured){
+    const sx = M + heroW + f(38);
+    if (priv){
+      if (hasPrev){
+        g.fillStyle = C.ink2; g.font = ZEN('700', 38);
+        g.fillText('点、伸びました', sx, y - f(8));
+      }
+    } else if (hasPrev){
+      g.fillStyle = C.ink2; g.font = MONO('400', 42);
+      g.fillText(D.prevTot + ' → ' + D.tot, sx, y - f(30));
+      g.fillStyle = C.ink3; g.font = MONO('400', 28);
+      g.fillText('/ ' + D.max, sx, y + f(18));
+    } else {
+      g.fillStyle = C.ink3; g.font = MONO('400', 30);
+      g.fillText('/ ' + D.max, sx, y - f(6));
+    }
   }
 
-  /* blocks */
-  let by = Y(790);
+  /* ---------- blocks ---------- */
+  y += gp(112);
   [['柔軟性', D.fN, D.fP, C.cyan], ['動きの質', D.mN, D.mP, C.orange]].forEach(([nm, n, pv, col]) => {
-    g.fillStyle = C.ink; g.font = '700 32px "Zen Kaku Gothic New", sans-serif';
-    g.fillText(nm, M, by);
-    if (!priv){
-      g.fillStyle = col; g.font = '900 34px "Zen Kaku Gothic New", sans-serif';
-      const sc = n.got + '';
-      const den = ' / ' + n.max;
-      g.font = '400 26px "IBM Plex Mono", monospace';
-      const dw2 = g.measureText(den).width;
-      g.font = '900 34px "Zen Kaku Gothic New", sans-serif';
-      const sw = g.measureText(sc).width;
-      g.fillText(sc, W - M - dw2 - sw, by);
-      g.fillStyle = C.ink3; g.font = '400 26px "IBM Plex Mono", monospace';
-      g.fillText(den, W - M - dw2, by);
+    g.fillStyle = C.ink; g.font = ZEN('700', 32);
+    g.fillText(nm, M, y);
+    if (!priv && n.max){
+      const den = ' / ' + n.max, sc = String(n.got);
+      g.font = MONO('400', 26); const dw = g.measureText(den).width;
+      g.font = ZEN('900', 34);  const sw = g.measureText(sc).width;
+      g.fillStyle = col; g.fillText(sc, W - M - dw - sw, y);
+      g.fillStyle = C.ink3; g.font = MONO('400', 26); g.fillText(den, W - M - dw, y);
     }
-    const barY = by + 22, barH = 14;
-    g.fillStyle = 'rgba(4,8,15,0.85)'; g.fillRect(M, barY, IW, barH);
-    g.strokeStyle = C.line; g.lineWidth = 1; g.strokeRect(M+.5, barY+.5, IW-1, barH-1);
-    const base = n.max ? Math.min(pv.got, n.got) / n.max * IW : 0;
-    const full = n.max ? n.got / n.max * IW : 0;
-    g.fillStyle = col; g.fillRect(M, barY, base, barH);
-    g.globalAlpha = 0.5; g.fillRect(M + base, barY, full - base, barH); g.globalAlpha = 1;
-    by += story ? 130 : 112;
+    const by = y + f(22), bh = f(14);
+    g.fillStyle = 'rgba(4,8,15,0.85)'; g.fillRect(M, by, IW, bh);
+    g.strokeStyle = C.line; g.lineWidth = 1; g.strokeRect(M+.5, by+.5, IW-1, bh-1);
+    if (n.max){
+      const base = Math.min(pv.got, n.got) / n.max * IW;
+      const full = n.got / n.max * IW;
+      g.fillStyle = col; g.fillRect(M, by, base, bh);
+      g.globalAlpha = 0.5; g.fillRect(M + base, by, full - base, bh); g.globalAlpha = 1;
+    }
+    y += gp(114);
   });
 
-  /* verdict */
-  const vy = Y(1120);
-  g.fillStyle = C.cyanHi; g.font = '500 22px "IBM Plex Mono", monospace';
-  spaced(g, 'VERDICT', M, vy, 8);
-  g.fillStyle = C.cyan; g.fillRect(M, vy + 26, 3, story ? 130 : 118);
-  g.fillStyle = C.ink; g.font = '900 ' + (story ? 54 : 48) + 'px "Zen Kaku Gothic New", sans-serif';
-  wrap(g, D.V[0], IW - 34).slice(0, 2).forEach((ln, i) => {
-    g.fillText(ln, M + 30, vy + 84 + i * (story ? 66 : 58));
-  });
+  /* ---------- verdict ---------- */
+  y += gp(30);
+  g.fillStyle = C.cyanHi; g.font = MONO('500', 22);
+  spaced(g, 'VERDICT', M, y, 8);
 
-  /* gained items */
-  let gy = Y(1370);
-  g.fillStyle = C.ink3; g.font = '400 22px "IBM Plex Mono", monospace';
-  spaced(g, D.gained.length ? '▲ 伸びた項目' : '── 維持', M, gy, 3);
-  gy += 46;
-  g.font = '500 30px "Zen Kaku Gothic New", sans-serif';
-  D.gained.slice(0, story ? 5 : 3).forEach(it => {
-    g.fillStyle = C.ink2; g.fillText(it.name, M, gy);
+  const vTop = y + gp(20);
+  g.font = ZEN('900', story ? 54 : 48);
+  const vLines = measured ? wrap(g, D.V[0], IW - f(40)).slice(0, 2)
+                          : ['測定を最後まで進めてください'];
+  const lh = f(story ? 66 : 60);
+  g.fillStyle = C.cyan; g.fillRect(M, vTop, 3, lh * vLines.length + f(14));
+  g.fillStyle = C.ink;
+  vLines.forEach((ln, i) => g.fillText(ln, M + f(32), vTop + f(story ? 54 : 48) + i * lh));
+  y = vTop + lh * vLines.length + gp(56);
+
+  /* ---------- gained ---------- */
+  const footTop = H - 214;
+  g.fillStyle = C.ink3; g.font = MONO('400', 22);
+  spaced(g, D.gained.length ? '▲ 伸びた項目' : (measured ? '── 維持' : '── 記録なし'), M, y, 3);
+  y += gp(48);
+
+  const rowH = f(48);
+  const room = Math.max(0, Math.floor((footTop - y) / rowH));
+  D.gained.slice(0, Math.min(room, story ? 5 : 3)).forEach(it => {
+    g.fillStyle = C.ink2; g.font = ZEN('500', 30);
+    g.fillText(it.name, M, y);
     if (!priv){
-      g.fillStyle = C.cyanHi; g.font = '400 26px "IBM Plex Mono", monospace';
+      g.fillStyle = C.cyanHi; g.font = MONO('400', 26);
       const tx = it.p + ' → ' + it.v;
-      g.fillText(tx, W - M - g.measureText(tx).width, gy);
-      g.font = '500 30px "Zen Kaku Gothic New", sans-serif';
+      g.fillText(tx, W - M - g.measureText(tx).width, y);
     }
-    gy += 48;
+    y += rowH;
   });
 
-  /* footer */
+  /* ---------- footer ---------- */
   const fy = H - 150;
   g.strokeStyle = 'rgba(56,189,248,0.25)'; g.lineWidth = 1;
-  g.beginPath(); g.moveTo(M, fy - 56); g.lineTo(W - M, fy - 56); g.stroke();
-  g.fillStyle = C.ink; g.font = '900 34px "Zen Kaku Gothic New", sans-serif';
+  g.beginPath(); g.moveTo(M, fy - 58); g.lineTo(W - M, fy - 58); g.stroke();
+  g.fillStyle = C.ink; g.font = ZEN('900', 34);
   g.fillText('根性より、設計。', M, fy);
-  g.fillStyle = C.cyanHi; g.font = '500 26px "IBM Plex Mono", monospace';
+  g.fillStyle = C.cyanHi; g.font = MONO('500', 26);
   const tag = '@enlab_official';
   g.fillText(tag, W - M - g.measureText(tag).width, fy - 4);
-  g.fillStyle = C.ink3; g.font = '400 20px "IBM Plex Mono", monospace';
+  g.fillStyle = C.ink3; g.font = MONO('400', 20);
   spaced(g, 'ENDURANCE LAB ／ トレイルランナーのオンラインサロン', M, fy + 46, 1);
 }
 
