@@ -485,6 +485,13 @@
           border-radius:50%;animation:sp .7s linear infinite;display:block}
   @keyframes sp{to{transform:rotate(360deg)}}
   @media(prefers-reduced-motion:reduce){.spin i{animation:none}}
+  .video.embed{background:#000;border-color:var(--line);cursor:default}
+  .video.embed::before,.video.embed::after{display:none}
+  .video iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+  .vhint{
+    font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink-3);
+    margin:-6px 0 16px;line-height:1.7;
+  }
   .vlink{cursor:pointer}
   .vlink:hover .play{filter:brightness(1.15)}
   .hrow{cursor:pointer}
@@ -542,6 +549,7 @@
         <div class="video vlink" id="i-video">
           <div class="play">▶</div><div class="lbl" id="i-vid"></div>
         </div>
+        <p class="vhint" id="i-vhint"></p>
         <div id="i-scores"></div>
         <div class="btnrow">
           <button class="btn ghost small" id="skip">スキップ</button>
@@ -677,6 +685,15 @@ const cellKey = (it, s) => s ? it.key + '_' + s : it.key;
 const cells = () => ITEMS.flatMap(it => it.sides.map(s => ({ it, s, k: cellKey(it, s) })));
 const jstToday = () => new Date(Date.now() + 9*3600000).toISOString().slice(0,10);
 
+/* YouTubeのURLから動画IDを取り出す。YouTube以外なら null */
+function ytId(url){
+  if (!url) return null;
+  const m = String(url).match(
+    /(?:youtu\.be\/|youtube\.com\/(?:embed\/|shorts\/|live\/|watch\?v=|.*[?&]v=))([A-Za-z0-9_-]{6,})/
+  );
+  return m ? m[1] : null;
+}
+
 function gapText(){
   if (!PREV_ON) return '';
   const d = Math.round((new Date(CUR_ON) - new Date(PREV_ON)) / 86400000);
@@ -738,14 +755,33 @@ function renderItem(){
   $('#i-gear').textContent  = it.gear;
   $('#i-count').textContent = pad(idx+1) + ' / ' + pad(ITEMS.length);
   $('#i-bar').style.width   = ((idx+1)/ITEMS.length*100) + '%';
-  $('#i-vid').textContent   = it.video ? 'やり方を見る ／ ' + it.label : '動画は準備中です';
   const b = $('#i-block');
   b.textContent = it.block === 'flex' ? '柔軟性' : '動きの質';
   b.className = 'chip ' + it.block;
-  $('#i-video').onclick = () => {
-    if (!it.video) return;
-    liff.openWindow({ url: it.video, external: false });
-  };
+
+  /* 動画は画面の中に埋め込む。1項目ずつなので iframe も常に1つ */
+  const box = $('#i-video'), hint = $('#i-vhint');
+  const vid = ytId(it.video);
+  if (vid){
+    box.classList.add('embed');
+    box.onclick = null;
+    box.innerHTML =
+      '<iframe src="https://www.youtube-nocookie.com/embed/' + vid +
+      '?rel=0&playsinline=1&modestbranding=1" title="' + it.label + ' の測り方" ' +
+      'allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share" ' +
+      'allowfullscreen loading="lazy"></iframe>';
+    hint.textContent = '見ながら測って、下から点数を選んでください';
+  } else if (it.video){
+    box.classList.remove('embed');
+    box.innerHTML = '<div class="play">▶</div><div class="lbl">やり方を見る ／ ' + it.label + '</div>';
+    box.onclick = () => liff.openWindow({ url: it.video, external: false });
+    hint.textContent = '';
+  } else {
+    box.classList.remove('embed');
+    box.innerHTML = '<div class="play">▶</div><div class="lbl">動画は準備中です</div>';
+    box.onclick = null;
+    hint.textContent = '';
+  }
 
   const host = $('#i-scores'); host.innerHTML = '';
   it.sides.forEach(s => {
