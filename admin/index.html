@@ -400,6 +400,11 @@
       <div class="dc" style="border-color:var(--rose)">
         <h3 style="color:var(--rose)">読み込めませんでした</h3>
         <p id="errmsg"></p>
+        <p id="errhint" style="font-size:12.5px;line-height:1.85;color:var(--ink-3);margin:10px 0 0"></p>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <button class="mini" id="retry">もう一度読み込む</button>
+          <button class="mini" id="rekey">キーを入れ直す</button>
+        </div>
       </div>
     </div>
   </div>
@@ -446,7 +451,10 @@ $('#enter').onclick = async () => {
   openApp(); load();
 };
 $('#key').addEventListener('keydown', e => { if (e.key === 'Enter') $('#enter').click(); });
-$('#logout').onclick = () => { try { localStorage.removeItem(LS); } catch(e){} location.reload(); };
+function forgetKey(){ try { localStorage.removeItem(LS); } catch(e){} location.reload(); }
+$('#logout').onclick = forgetKey;
+$('#rekey').onclick  = forgetKey;
+$('#retry').onclick  = () => load();
 $('#reload').onclick = () => load();
 
 /* ---------- helpers ---------- */
@@ -471,6 +479,11 @@ async function load(){
   } catch(e){
     $('#loading').hidden = true;
     $('#errmsg').textContent = e.message;
+    $('#errhint').textContent = /unauthorized|401/i.test(e.message)
+      ? 'キーが通りませんでした。「キーを入れ直す」で入力画面に戻れます。'
+        + '入れ直しても同じなら、Supabase の Edge Functions → Secrets にある ENLAB_ADMIN_KEY が'
+        + '消えているか、値が変わっています。'
+      : '通信に失敗しました。電波の良いところで「もう一度読み込む」を押してください。';
     $('#err').hidden = false;
   }
 }
@@ -816,6 +829,13 @@ document.querySelectorAll('.tab').forEach(t => {
 
 /* ---------- 起動 ---------- */
 (function(){
+  /* ?reset=1 を付けて開くと、記憶したキーを消して入力画面に戻ります（緊急用） */
+  if (/[?&]reset=1/.test(location.search)){
+    try { localStorage.removeItem(LS); } catch(e){}
+    $('#ng').textContent = '記憶していたキーを消しました。もう一度入れてください。';
+    history.replaceState(null, '', location.pathname);
+    return;
+  }
   let saved = '';
   try { saved = localStorage.getItem(LS) || ''; } catch(e){}
   if (saved){ KEY = saved; openApp(); load(); }
