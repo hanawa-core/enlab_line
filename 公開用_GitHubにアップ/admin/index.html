@@ -335,7 +335,7 @@
       <div class="pane" id="p-keep">
         <section>
           <h2 class="sec">声をかける相手 <span class="cnt" id="fcount"></span></h2>
-          <p class="lede">7日以上押していない人。退会理由の「時間がなくてできなかった」は、ここで止められる可能性がある。通知は送らない設計なので、動くのは主宰側。</p>
+          <p class="lede">まだ一度もメニューを開いていない人（NOT YET）と、7日以上押していない人。退会理由の「時間がなくてできなかった」は、ここで止められる可能性がある。通知は送らない設計なので、動くのは主宰側。</p>
           <div class="follow" id="follow"></div>
         </section>
         <section>
@@ -400,6 +400,11 @@
       <div class="dc" style="border-color:var(--rose)">
         <h3 style="color:var(--rose)">読み込めませんでした</h3>
         <p id="errmsg"></p>
+        <p id="errhint" style="font-size:12.5px;line-height:1.85;color:var(--ink-3);margin:10px 0 0"></p>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <button class="mini" id="retry">もう一度読み込む</button>
+          <button class="mini" id="rekey">キーを入れ直す</button>
+        </div>
       </div>
     </div>
   </div>
@@ -446,7 +451,10 @@ $('#enter').onclick = async () => {
   openApp(); load();
 };
 $('#key').addEventListener('keydown', e => { if (e.key === 'Enter') $('#enter').click(); });
-$('#logout').onclick = () => { try { localStorage.removeItem(LS); } catch(e){} location.reload(); };
+function forgetKey(){ try { localStorage.removeItem(LS); } catch(e){} location.reload(); }
+$('#logout').onclick = forgetKey;
+$('#rekey').onclick  = forgetKey;
+$('#retry').onclick  = () => load();
 $('#reload').onclick = () => load();
 
 /* ---------- helpers ---------- */
@@ -471,6 +479,11 @@ async function load(){
   } catch(e){
     $('#loading').hidden = true;
     $('#errmsg').textContent = e.message;
+    $('#errhint').textContent = /unauthorized|401/i.test(e.message)
+      ? 'キーが通りませんでした。「キーを入れ直す」で入力画面に戻れます。'
+        + '入れ直しても同じなら、Supabase の Edge Functions → Secrets にある ENLAB_ADMIN_KEY が'
+        + '消えているか、値が変わっています。'
+      : '通信に失敗しました。電波の良いところで「もう一度読み込む」を押してください。';
     $('#err').hidden = false;
   }
 }
@@ -501,12 +514,14 @@ function render(){
   const activeWeek = M.filter(m => m.days_since_last !== null && m.days_since_last <= 6).length;
   const follow = M.filter(m => m.status === 'watch' || m.status === 'risk' || m.status === 'never');
   const noTest = M.filter(m => !m.test || !m.test.latest_on).length;
+  const noOpen = M.filter(m => m.never_opened).length;   // 友だち追加だけの人
   const FP = DATA.fuelPlans || [];
   const fuelUsers = new Set(FP.map(f => f.line_user_id)).size;
   const nameOf = new Map(DATA.members.map(m => [m.line_user_id, m.display_name || '（名前なし）']));
   $('#kpis').innerHTML = [
     ['good','会員数', n, '', '退会者を除く在籍'],
     ['good','今週アクティブ', activeWeek, '／'+n, n ? Math.round(activeWeek/n*100)+'% が7日以内に押している' : '—'],
+    [noOpen ? 'bad':'good','未タップ', noOpen, '人', '追加はしたが、まだ一度も開いていない'],
     [follow.length ? 'warn':'good','要フォロー', follow.length, '人', '7日以上、記録がない'],
     [noTest ? 'bad':'good','テスト未実施', noTest, '人', '測っていないと比較が始まらない'],
     ['good','補給計算の利用', fuelUsers, '人', (DATA.fuelPlans||[]).length + ' 件の計画を保存'],
@@ -515,22 +530,37 @@ function render(){
   ).join('');
 
   /* 要フォロー */
-  const ord = { never:0, risk:1, watch:2 };
-  follow.sort((a,b) => (ord[a.status]-ord[b.status]) || ((b.days_since_last??999)-(a.days_since_last??999)));
+  const ord = { never:1, risk:2, watch:3 };
+  const rank = m => m.never_opened ? 0 : ord[m.status];
+  follow.sort((a,b) => (rank(a)-rank(b))
+    || ((b.days_since_follow??b.days_since_last??999)-(a.days_since_follow??a.days_since_last??999)));
   $('#fcount').textContent = follow.length + ' 人';
   $('#follow').innerHTML = follow.map(m => {
     const cls = m.status === 'watch' ? 'watch' : 'risk';
-    const lab = m.status === 'never' ? 'NEVER' : (m.status === 'risk' ? 'RISK' : 'WATCH');
-    const big = m.days_since_last === null
-      ? '<div class="big">—<span>一度も記録なし</span></div>'
-      : '<div class="big">'+m.days_since_last+'<span>日 記録なし</span></div>';
+    const lab = m.never_opened ? 'NOT YET'
+              : m.status === 'never' ? 'NEVER'
+              : (m.status === 'risk' ? 'RISK' : 'WATCH');
+    const big = m.never_opened
+      ? (m.days_since_follow === null || m.days_since_follow === undefined
+          ? '<div class="big">—<span>まだ開いていない</span></div>'
+          : '<div class="big">'+m.days_since_follow+'<span>日 開いていない</span></div>')
+      : m.days_since_last === null
+        ? '<div class="big">—<span>一度も記録なし</span></div>'
+        : '<div class="big">'+m.days_since_last+'<span>日 記録なし</span></div>';
+    if (m.never_opened) {
+      return '<div class="fc risk" data-u="'+m.line_user_id+'">'+
+        '<div class="r1"><span class="nm">'+esc(m.name)+'</span><span class="st">'+lab+'</span></div>'+
+        big +
+        '<div class="meta">友だち追加 '+(m.followed_at ? dstr(m.followed_at) : '—')+'<br>'+
+        'メニューを一度も開いていない</div></div>';
+    }
     return '<div class="fc '+cls+'" data-u="'+m.line_user_id+'">'+
       '<div class="r1"><span class="nm">'+esc(m.name)+'</span><span class="st">'+lab+'</span></div>'+
       big +
       '<div class="meta">通算 '+m.total_days+'日　／　直近30日 '+m.days.filter(Boolean).length+'日<br>'+
       (m.test && m.test.latest_on ? 'フィジカルテスト '+m.test.total_got+'/'+m.test.total_max+'（'+dstr(m.test.latest_on)+'）' : 'フィジカルテスト 未実施')+
       '</div></div>';
-  }).join('') || '<p class="lede">7日以上あいている人はいません。</p>';
+  }).join('') || '<p class="lede">未タップの人も、7日以上あいている人もいません。</p>';
 
   /* 会員一覧 */
   const rows = [...M].sort((a,b) => (b.streak-a.streak) || ((a.days_since_last??999)-(b.days_since_last??999)));
@@ -816,6 +846,13 @@ document.querySelectorAll('.tab').forEach(t => {
 
 /* ---------- 起動 ---------- */
 (function(){
+  /* ?reset=1 を付けて開くと、記憶したキーを消して入力画面に戻ります（緊急用） */
+  if (/[?&]reset=1/.test(location.search)){
+    try { localStorage.removeItem(LS); } catch(e){}
+    $('#ng').textContent = '記憶していたキーを消しました。もう一度入れてください。';
+    history.replaceState(null, '', location.pathname);
+    return;
+  }
   let saved = '';
   try { saved = localStorage.getItem(LS) || ''; } catch(e){}
   if (saved){ KEY = saved; openApp(); load(); }
