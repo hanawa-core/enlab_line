@@ -19,11 +19,11 @@ window.ENLAB = {
   // 初期テストの結果画面から飛ぶ、会員サイトの導線
   // 空にしておくと top に飛びます。あとで埋めれば十分です。
   MEMBER: {
-    top:   'https://coredesign-tr.com/',   // ★会員サイトのトップに差し替える
-    care:  '',                             // ケア動画のセクション
+    top:   'https://coredesign-tr.com/sp/gbK5lXHr/DczvjqO9/member/',
+    care:  '',                             // ケア動画のセクション（アンカーが決まったら）
     train: '',                             // トレーニング動画（解説付き）
     read:  '',                             // 解説記事
   },
 
-  DISCORD: 'https://discord.gg/6G5JfMcCzq',
+  DISCORD: 'https://discord.gg/4qyRmAeB5J',
 };

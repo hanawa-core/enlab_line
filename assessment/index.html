@@ -628,6 +628,7 @@
         <div class="callout" style="background:var(--s0-bg);border-color:var(--s0-line)">
           <h4 style="color:var(--s0)">読み込めませんでした</h4>
           <p>電波の良いところで、もう一度メニューから開いてみてください。</p>
+          <p id="errdt" style="font-size:11px;opacity:.75;word-break:break-all;margin-top:8px"></p>
         </div>
       </div>
     </div>
@@ -703,6 +704,13 @@ function gapText(){
 }
 
 const SCREENS = ['s-load','s-start','s-item','s-result','s-share','s-err'];
+let lastErr = null;
+function showErr(e){
+  lastErr = e || lastErr;
+  const d = document.getElementById('errdt');
+  if (d) d.textContent = lastErr ? String(lastErr.message || lastErr).slice(0,300) : '';
+  show('s-err');
+}
 function show(id){
   SCREENS.forEach(x => { const el = $('#'+x); if (el) el.hidden = (x !== id); });
   document.querySelectorAll('.scroll').forEach(el => el.scrollTop = 0);
@@ -822,7 +830,7 @@ async function finish(){
     buildResult();
     renderHistory();
     show('s-result');
-  } catch(e){ console.error(e); show('s-err'); }
+  } catch(e){ console.error(e); showErr(e); }
   finally { $('#next').disabled = false; }
 }
 
@@ -907,7 +915,7 @@ $('#seeLast').onclick = () => { if (LAST_RES){ applyServer(LAST_RES); buildResul
     show('s-start');
   } catch(e){
     console.error(e);
-    show('s-err');
+    showErr(e);
   }
 })();
 

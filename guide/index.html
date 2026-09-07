@@ -74,6 +74,21 @@
   .card .go::after{content:"→";font-family:var(--mono)}
   .card .note{margin:10px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.8}
 
+  /* 使い分け */
+  .split{display:grid;gap:10px}
+  .sp{background:var(--surface);border:1px solid var(--line-soft);border-radius:10px;padding:17px 17px 15px}
+  .sp .k{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+  .sp .k .em{font-size:20px;line-height:1}
+  .sp .k b{font-family:var(--display);font-weight:900;font-size:16px}
+  .sp .k i{font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--cyan-hi)}
+  .sp p{margin:0;font-size:13.5px;line-height:1.95;color:var(--ink-2)}
+  .sp .go{display:inline-flex;align-items:center;gap:7px;text-decoration:none;margin-top:13px;
+    font-family:var(--display);font-weight:700;font-size:13px;color:var(--cyan-hi);
+    border:1px solid var(--line);border-radius:7px;padding:9px 14px;background:#0B2233}
+  .sp .go::after{content:"→";font-family:var(--mono)}
+  .splitsum{margin:14px 0 0;text-align:center;font-size:13px;color:var(--ink-3);line-height:2}
+  .splitsum b{color:var(--cyan-hi);font-family:var(--display);font-weight:700}
+
   /* 流れ */
   .flow{counter-reset:s;display:grid;gap:2px;margin:0}
   .flow li{list-style:none;counter-increment:s;position:relative;
@@ -217,6 +232,31 @@
     </div>
 
   </div>
+
+  <h2>3つの使い分け</h2>
+  <p class="h2sub">LINE・メンバーサイト・Discord。役割を分けてあります。</p>
+  <div class="split">
+    <div class="sp">
+      <div class="k"><span class="em">📱</span><b>LINE</b><i>毎日ふれるところ</i></div>
+      <p>1タップの記録、フィジカルテスト、補給計算。<br>
+        <b>1分以内で終わること</b>は、ぜんぶここ。<br>
+        決めなくても、とりあえず開く場所です。</p>
+    </div>
+    <div class="sp">
+      <div class="k"><span class="em">📚</span><b>メンバーサイト</b><i>学ぶところ</i></div>
+      <p>ケア動画・トレーニング動画・解説記事の本体はこちら。<br>
+        <b>腰をすえてじっくり見る</b>のは、ここです。</p>
+      <a class="go" data-link="top" href="#">会員ページへ</a>
+    </div>
+    <div class="sp">
+      <div class="k"><span class="em">💬</span><b>Discord</b><i>話すところ</i></div>
+      <p>質問・レース報告・雑談。<br>
+        「ここが痛い」「うまくいかない」も気軽にどうぞ。<br>
+        <b>人と話したいとき</b>は、いつでもここへ。</p>
+      <a class="go" href="https://discord.gg/4qyRmAeB5J">参加する</a>
+    </div>
+  </div>
+  <p class="splitsum">記録は <b>LINE</b>　／　学びは <b>サイト</b>　／　相談は <b>Discord</b></p>
 
   <h2>まず、この順番で</h2>
   <p class="h2sub">初日にやることは3つだけです。</p>

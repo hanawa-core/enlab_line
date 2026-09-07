@@ -188,7 +188,7 @@
     <p class="foot">今日の取り組みが明日を創る。</p>
   </div>
 
-  <div id="err" hidden><div class="msg"><b>読み込めませんでした</b>電波の良いところで、もう一度メニューから開いてみてください。</div></div>
+  <div id="err" hidden><div class="msg"><b>読み込めませんでした</b>電波の良いところで、もう一度メニューから開いてみてください。<span id="errdt" style="display:block;font-size:11px;opacity:.7;word-break:break-all;margin-top:8px"></span></div></div>
 </div>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -197,6 +197,11 @@
 const $ = (id) => document.getElementById(id);
 const LABEL = { run:'走った', care:'整えた／鍛えた', rest:'休んだ' };
 let idToken = null, state = null;
+function showErr(e){
+  const d = $('errdt');
+  if (d && e) d.textContent = String(e.message || e).slice(0,300);
+  $('err').hidden = false;
+}
 
 async function api(action, extra = {}){
   const r = await fetch(ENLAB.API, {
@@ -269,7 +274,7 @@ async function put(type, btns){
     loadRank();
     window.scrollTo({ top:0, behavior:'smooth' });
   } catch(e){
-    $('err').hidden = false;
+    showErr(e);
   } finally {
     btns.forEach(b => b.disabled = false);
   }
@@ -290,7 +295,7 @@ document.querySelectorAll('.opt').forEach(b => {
   } catch(e){
     console.error(e);
     $('loading').hidden = true;
-    $('err').hidden = false;
+    showErr(e);
   }
 })();
 </script>
