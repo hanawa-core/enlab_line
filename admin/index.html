@@ -423,8 +423,10 @@
 <script>
 
 const $ = (s) => document.querySelector(s);
-const API = 'https://lzlizdcrgarojpmrdbrj.supabase.co/functions/v1/enlab';
-const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6bGl6ZGNyZ2Fyb2pwbXJkYnJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5ODk4MDUsImV4cCI6MjEwMzU2NTgwNX0.81Sx8pwCx6SVG-f9xxZqM0MWa1EVHDQKPV85_jeOHsE';
+/* バックエンドは Cloudflare Worker + D1（2026/9/29 に Supabase から移行）
+   旧: https://lzlizdcrgarojpmrdbrj.supabase.co/functions/v1/enlab */
+const API = 'https://enlab-line.s-hanawa.workers.dev';
+const ANON = '';   // Cloudflare では不要
 const LS = 'enlab_admin_key';
 let KEY = '', DATA = null;
 
