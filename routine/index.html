@@ -40,6 +40,25 @@
   h1{font-family:var(--display);font-weight:900;font-size:22px;margin:0 0 6px;line-height:1.4}
   .lede{margin:0 0 18px;color:var(--ink-3);font-size:13px;line-height:1.8}
 
+
+  /* ---- 押し忘れた日を埋める ---- */
+  .back{margin-top:26px;padding-top:20px;border-top:1px solid var(--line-soft)}
+  .back h2{font-family:var(--display);font-weight:900;font-size:15px;margin:0 0 4px}
+  .back .bnote{margin:0 0 14px;font-size:12px;color:var(--ink-3);line-height:1.75}
+  .brow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-soft)}
+  .brow:last-child{border-bottom:none}
+  .bd{flex:1;font-family:var(--mono);font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+  .bd small{margin-left:5px;color:var(--ink-3)}
+  .bd i{font-style:normal;margin-left:9px;font-family:var(--body);font-size:11.5px;color:var(--ink-3)}
+  .bd i.set{color:var(--cyan-hi)}
+  .bbs{display:flex;gap:6px;flex:none}
+  .bb{width:42px;height:34px;border-radius:7px;font-size:16px;line-height:1;
+    background:var(--surface);border:1px solid var(--line-soft);color:var(--ink);
+    display:grid;place-items:center;transition:background .12s,border-color .12s,transform .08s}
+  .bb:active{transform:scale(.94)}
+  .bb.on{border-color:var(--cyan);background:#0B2E44}
+  .bb:disabled{opacity:.4}
+
   /* ---- buttons ---- */
   .opts{display:grid;gap:10px}
   .opt{
@@ -188,6 +207,12 @@
     <p class="foot">今日の取り組みが明日を創る。</p>
   </div>
 
+  <section class="back" id="back" hidden>
+    <h2>押し忘れた日を埋める</h2>
+    <p class="bnote">直近7日ぶんだけ、あとから記録できます。<br>思い出せる範囲で。埋めるために走る必要はありません。</p>
+    <div id="backList"></div>
+  </section>
+
   <div id="err" hidden><div class="msg"><b>読み込めませんでした</b>電波の良いところで、もう一度メニューから開いてみてください。<span id="errdt" style="display:block;font-size:11px;opacity:.7;word-break:break-all;margin-top:8px"></span></div></div>
 </div>
 
@@ -266,18 +291,52 @@ function render(){
   });
 }
 
-async function put(type, btns){
+const _render = render;
+render = function(){ _render(); renderBack(); };
+
+async function put(type, btns, date){
   btns.forEach(b => b.disabled = true);
   try {
-    state = await api('record.put', { type });
+    state = await api('record.put', date ? { type, date } : { type });
     render();
     loadRank();
-    window.scrollTo({ top:0, behavior:'smooth' });
+    if (!date) window.scrollTo({ top:0, behavior:'smooth' });
   } catch(e){
     showErr(e);
   } finally {
     btns.forEach(b => b.disabled = false);
   }
+}
+
+/* ---- 押し忘れた日 ---- */
+const JPDAY = ['日','月','火','水','木','金','土'];
+const EMO = { run:'🏃', care:'🧘', rest:'😴' };
+
+function renderBack(){
+  if (!state || !state.todayDate){ $('back').hidden = true; return; }
+  const n = state.backfillDays || 7;
+  const base = new Date(state.todayDate + 'T00:00:00Z');
+  const recent = state.recent || {};
+  const host = $('backList');
+  let html = '';
+  for (let i = 1; i <= n; i++){
+    const d = new Date(base); d.setUTCDate(d.getUTCDate() - i);
+    const iso = d.toISOString().slice(0,10);
+    const cur = recent[iso] || null;
+    html += '<div class="brow">' +
+      '<span class="bd">' + (d.getUTCMonth()+1) + '/' + d.getUTCDate() +
+        '<small>' + JPDAY[d.getUTCDay()] + '</small>' +
+        '<i class="' + (cur ? 'set' : '') + '">' + (cur ? LABEL[cur] : '未記録') + '</i></span>' +
+      '<span class="bbs">' +
+        ['run','care','rest'].map(t =>
+          '<button class="bb' + (cur === t ? ' on' : '') + '" data-t="' + t + '" data-d="' + iso + '">' +
+          EMO[t] + '</button>').join('') +
+      '</span></div>';
+  }
+  host.innerHTML = html;
+  const all = [...host.querySelectorAll('.bb')];
+  all.forEach(b => { b.onclick = () => put(b.dataset.t, all, b.dataset.d); });
+  $('back').hidden = false;
 }
 
 document.querySelectorAll('.opt').forEach(b => {
